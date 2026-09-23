@@ -1,0 +1,191 @@
+:root {
+  --bg-main: #FAF8F5;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F6F4EF;
+  --bg-accent-light: #FDECE8;
+  --primary-red: #C24128;
+  --primary-red-hover: #A9341E;
+  --text-main: #1C1917;
+  --text-muted: #78716C;
+  --text-subtle: #A8A29E;
+  --border-dark: #1C1917;
+  --border-light: #E7E3DC;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+  --radius-full: 9999px;
+  --shadow-neo: 2px 2px 0px #1C1917;
+  --shadow-neo-lg: 3px 3px 0px #1C1917;
+  --shadow-neo-sm: 1.5px 1.5px 0px #1C1917;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  background-color: #121110;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Teléfono contenedor responsivo */
+.app-container {
+  width: 100%;
+  max-width: 440px;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  overflow-y: auto;
+}
+
+@media (min-width: 441px) {
+  .app-container {
+    min-height: 880px;
+    height: 94vh;
+    border-radius: 36px;
+    border: 3px solid #2B2623;
+    overflow-y: auto;
+    margin: 20px 0;
+  }
+}
+
+/* Ocultar barra de scroll pero mantener funcionalidad */
+.app-container::-webkit-scrollbar {
+  width: 4px;
+}
+.app-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+/* Estilos de botones estándar de Figma */
+.btn-primary {
+  width: 100%;
+  padding: 16px 20px;
+  background-color: var(--primary-red);
+  color: #FFFFFF;
+  border: 2px solid var(--border-dark);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.15s ease-in-out;
+  box-shadow: var(--shadow-neo);
+  font-family: inherit;
+  text-transform: none;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-red-hover);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--border-dark);
+}
+
+.btn-primary:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-dark);
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 15px 20px;
+  background-color: #FFFFFF;
+  color: var(--text-main);
+  border: 2px solid var(--border-dark);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease-in-out;
+  box-shadow: var(--shadow-neo);
+  font-family: inherit;
+}
+
+.btn-secondary:hover {
+  background-color: #FAF8F5;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--border-dark);
+}
+
+.btn-secondary:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-dark);
+}
+
+/* Tarjetas y Contenedores */
+.neo-card {
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-dark);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-neo);
+  position: relative;
+}
+
+.sub-card {
+  background-color: var(--bg-card);
+  border: 1.5px solid var(--border-dark);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+
+/* Badges y Pastillas */
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-red {
+  background-color: var(--bg-accent-light);
+  color: var(--primary-red);
+}
+
+.badge-dark {
+  background-color: var(--border-dark);
+  color: #FFFFFF;
+}
+
+.badge-neutral {
+  background-color: #EFECE6;
+  color: var(--text-muted);
+}

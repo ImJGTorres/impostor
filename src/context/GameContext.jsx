@@ -50,18 +50,8 @@ export function GameProvider({ children }) {
   };
 
   // Navegación principal y pestañas
-  const [currentScreen, setCurrentScreen] = useState(getInitialScreen);
-  const [activeTab, setActiveTab] = useState(() => {
-    if (screenParam === 'RULES') return 'rules';
-    if (screenParam === 'PACKS') return 'packs';
-    return 'lobby';
-  });
-
-  // Gestión de palabras y sincronización Excel / Google Sheets
-  const [dynamicWordsData, setDynamicWordsData] = useState(null);
-  const [isLoadingWords, setIsLoadingWords] = useState(false);
-  const [wordsSyncStatus, setWordsSyncStatus] = useState(null); // { type: 'success'|'error', message: string }
-  const [googleSheetsUrl, setGoogleSheetsUrl] = useState('');
+  const [currentScreen, setCurrentScreen] = useState('HOME');
+  const [activeTab, setActiveTab] = useState('lobby'); // 'lobby' | 'packs' | 'rules'
 
   // Configuración de partida
   const [playerNames, setPlayerNames] = useState([]);
@@ -223,9 +213,7 @@ export function GameProvider({ children }) {
 
   // Iniciar partida
   const startNewGame = () => {
-    if (playerNames.length < 3) return;
-
-    const wordData = getRandomGameWord(mainCategory, activeSubtopics, dynamicWordsData);
+    const wordData = getRandomGameWord(mainCategory, activeSubtopics);
     setSecretInfo(wordData);
 
     // Asignar impostores de forma aleatoria
@@ -251,7 +239,7 @@ export function GameProvider({ children }) {
     const randomStarter = playersWithRoles[Math.floor(Math.random() * playersWithRoles.length)].name;
     setFirstCluePlayer(randomStarter);
 
-    // Ir a pantalla de entrega y revelación segura (Screen 3)
+    // Ir a pantalla de entrega (Figma 1:127)
     setCurrentScreen('HANDOVER');
   };
 
@@ -294,7 +282,7 @@ export function GameProvider({ children }) {
     // Caso 1: Votaron a un IMPOSTOR
     if (wasImpostor) {
       if (remainingImpostors === 0) {
-        // No quedan más impostores: ¡Victoria total de los civiles!
+        // Victoria de los civiles (Figma 1:987)
         confetti({
           particleCount: 90,
           spread: 80,
@@ -316,12 +304,12 @@ export function GameProvider({ children }) {
 
     // Caso 2: Votaron a un CIVIL INOCENTE
     if (remainingImpostors >= remainingCivilians) {
-      // Los impostores igualaron o superaron a los civiles: ¡Ganan los impostores!
+      // Victoria de los impostores (Figma 5:122)
       setCurrentScreen('IMPOSTOR_WINS');
       return;
     }
 
-    // El juego continúa con un civil menos
+    // Si eliminaron a un inocente y el juego sigue (Figma 5:2)
     setCurrentScreen('INNOCENT_ELIMINATED');
   };
 

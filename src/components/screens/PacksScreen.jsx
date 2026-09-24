@@ -9,8 +9,13 @@ export default function PacksScreen() {
     mainCategory,
     setMainCategory,
     setCurrentScreen,
-    setActiveTab
+    setActiveTab,
+    currentUfpsWords,
+    currentGeneralSubtopics
   } = useGame();
+
+  const ufpsList = currentUfpsWords?.length > 0 ? currentUfpsWords : UFPS_CATEGORY.words;
+  const generalList = currentGeneralSubtopics?.length > 0 ? currentGeneralSubtopics : GENERAL_SUBTOPICS;
 
   const [activeTabFilter, setActiveTabFilter] = useState('all'); // 'all' | 'ufps' | 'general'
 
@@ -95,9 +100,9 @@ export default function PacksScreen() {
               </div>
 
               <div className="pack-words-sample">
-                <span className="sample-label">Palabras incluidas ({UFPS_CATEGORY.words.length}):</span>
+                <span className="sample-label">Palabras incluidas ({ufpsList.length}):</span>
                 <p className="sample-list">
-                  {UFPS_CATEGORY.words.slice(0, 6).map(w => w.word).join(' • ')}...
+                  {ufpsList.slice(0, 6).map(w => w.word).join(' • ')}...
                 </p>
               </div>
 
@@ -132,7 +137,7 @@ export default function PacksScreen() {
               </p>
 
               <div className="pack-tags-wrap">
-                {GENERAL_SUBTOPICS.map(sub => (
+                {generalList.map(sub => (
                   <span key={sub.id} className="pack-subtag">
                     {sub.name} ({sub.words.length})
                   </span>

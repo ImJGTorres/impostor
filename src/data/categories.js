@@ -135,14 +135,17 @@ export const GENERAL_CATEGORY = {
 };
 
 // Función para obtener una palabra aleatoria según la configuración elegida
-export function getRandomGameWord(mainCategory, activeSubtopicIds = ['videojuegos', 'comida', 'peliculas']) {
+export function getRandomGameWord(mainCategory, activeSubtopicIds = ['videojuegos', 'comida', 'peliculas'], dynamicData = null) {
+  const currentUfpsWords = dynamicData?.ufpsWords?.length > 0 ? dynamicData.ufpsWords : UFPS_CATEGORY.words;
+  const currentSubtopics = dynamicData?.generalSubtopics?.length > 0 ? dynamicData.generalSubtopics : GENERAL_SUBTOPICS;
+
   if (mainCategory === 'ufps') {
-    const list = UFPS_CATEGORY.words;
+    const list = currentUfpsWords;
     const selected = list[Math.floor(Math.random() * list.length)];
     return {
       word: selected.word.toUpperCase(),
       hint: selected.hint,
-      categoryName: `UFPS › ${selected.group}`,
+      categoryName: `UFPS › ${selected.group || 'Ingeniería de Sistemas'}`,
       categoryBadge: 'NIVEL 1',
       isUfps: true
     };
@@ -150,23 +153,24 @@ export function getRandomGameWord(mainCategory, activeSubtopicIds = ['videojuego
 
   // Si es General, recolectar las palabras de los subtemas activos
   let pool = [];
-  GENERAL_SUBTOPICS.forEach(sub => {
+  currentSubtopics.forEach(sub => {
     if (activeSubtopicIds.includes(sub.id)) {
       pool = pool.concat(sub.words);
     }
   });
 
   if (pool.length === 0) {
-    // Si no seleccionó ninguno, usar videojuegos por defecto
-    pool = GENERAL_SUBTOPICS[0].words;
+    // Si no seleccionó ninguno, usar el primer subtema disponible
+    pool = currentSubtopics[0]?.words || GENERAL_SUBTOPICS[0].words;
   }
 
   const chosen = pool[Math.floor(Math.random() * pool.length)];
   return {
     word: chosen.word.toUpperCase(),
     hint: chosen.hint,
-    categoryName: chosen.categoryName,
+    categoryName: chosen.categoryName || `General › ${chosen.subtopic || 'Varios'}`,
     categoryBadge: 'NIVEL 1',
     isUfps: false
   };
 }
+

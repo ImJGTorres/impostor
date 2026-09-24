@@ -34,7 +34,8 @@ export default function ConfigScreen() {
     activeSubtopics,
     toggleSubtopic,
     startNewGame,
-    setCurrentScreen
+    setCurrentScreen,
+    currentGeneralSubtopics
   } = useGame();
 
   const [inputName, setInputName] = useState('');
@@ -345,7 +346,7 @@ export default function ConfigScreen() {
               </div>
 
               <div className="subtopics-pills-wrap">
-                {GENERAL_SUBTOPICS.map((sub) => {
+                {(currentGeneralSubtopics || GENERAL_SUBTOPICS).map((sub) => {
                   const isActive = activeSubtopics.includes(sub.id);
                   return (
                     <button

@@ -16,9 +16,37 @@ const AVATAR_COLORS = [
 ];
 
 export function GameProvider({ children }) {
+  // Parámetro de preview por URL (?screen=...)
+  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const screenParam = params ? params.get('screen') : null;
+
+  const defaultMockPlayers = [
+    { id: 1, name: 'Sofía', letter: 'S', color: '#C24128', isImpostor: false, isAlive: screenParam !== 'INNOCENT_ELIMINATED' },
+    { id: 2, name: 'Mateo', letter: 'M', color: '#2563EB', isImpostor: false, isAlive: true },
+    { id: 3, name: 'Carlos', letter: 'C', color: '#059669', isImpostor: true, isAlive: true },
+    { id: 4, name: 'Camila', letter: 'C', color: '#D97706', isImpostor: false, isAlive: true },
+    { id: 5, name: 'Andrés', letter: 'A', color: '#7C3AED', isImpostor: false, isAlive: true },
+  ];
+
+  const getInitialScreen = () => {
+    if (!screenParam) return 'HOME';
+    if (screenParam === 'REVEAL_CIVIL' || screenParam === 'REVEAL_IMPOSTOR') return 'REVEAL';
+    return screenParam.toUpperCase();
+  };
+
+  const getInitialTurn = () => {
+    if (screenParam === 'REVEAL_IMPOSTOR') return 2; // Carlos es impostor
+    if (screenParam === 'HANDOVER') return 1; // Pásale a Mateo
+    return 0;
+  };
+
   // Navegación principal y pestañas
-  const [currentScreen, setCurrentScreen] = useState('HOME');
-  const [activeTab, setActiveTab] = useState('lobby'); // 'lobby' | 'packs' | 'rules'
+  const [currentScreen, setCurrentScreen] = useState(getInitialScreen);
+  const [activeTab, setActiveTab] = useState(() => {
+    if (screenParam === 'RULES') return 'rules';
+    if (screenParam === 'PACKS') return 'packs';
+    return 'lobby';
+  });
 
   // Configuración de partida
   const [playerNames, setPlayerNames] = useState(['Sofía', 'Mateo', 'Carlos', 'Camila', 'Andrés']);
@@ -27,18 +55,34 @@ export function GameProvider({ children }) {
   const [activeSubtopics, setActiveSubtopics] = useState(['videojuegos', 'comida', 'peliculas']);
 
   // Estado activo de la partida
-  const [assignedPlayers, setAssignedPlayers] = useState([]);
+  const [assignedPlayers, setAssignedPlayers] = useState(defaultMockPlayers);
   const [secretInfo, setSecretInfo] = useState({
-    word: '',
-    hint: '',
-    categoryName: '',
+    word: 'THE LEGEND OF ZELDA',
+    hint: 'Aventura en mundo abierto de Nintendo',
+    categoryName: 'General › Videojuegos',
     categoryBadge: 'NIVEL 1'
   });
-  const [currentTurnIndex, setCurrentTurnIndex] = useState(0);
-  const [currentRound, setCurrentRound] = useState(1);
-  const [roundHistory, setRoundHistory] = useState([]);
-  const [lastEliminated, setLastEliminated] = useState(null);
-  const [firstCluePlayer, setFirstCluePlayer] = useState('');
+  const [currentTurnIndex, setCurrentTurnIndex] = useState(getInitialTurn);
+  const [currentRound, setCurrentRound] = useState(screenParam === 'IMPOSTOR_WINS' ? 3 : 1);
+  const [roundHistory, setRoundHistory] = useState(() => {
+    if (screenParam === 'IMPOSTOR_WINS') {
+      return [
+        { round: 1, player: 'Sofía', roleDescription: 'Civil inocente expulsada' },
+        { round: 2, player: 'Camila', roleDescription: 'Civil inocente expulsada' }
+      ];
+    }
+    return [];
+  });
+  const [lastEliminated, setLastEliminated] = useState(() => {
+    if (screenParam === 'CIVILIANS_WIN') {
+      return { id: 3, name: 'Carlos', letter: 'C', isImpostor: true, wasImpostor: true };
+    }
+    if (screenParam === 'INNOCENT_ELIMINATED') {
+      return { id: 1, name: 'Sofía', letter: 'S', isImpostor: false, wasImpostor: false };
+    }
+    return null;
+  });
+  const [firstCluePlayer, setFirstCluePlayer] = useState('Sofía');
 
   // Agregar jugador
   const addPlayer = (name) => {

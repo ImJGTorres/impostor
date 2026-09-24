@@ -1,7 +1,6 @@
 import React from 'react';
 import { Users, Key, HelpCircle, Play, BookOpen, Tag } from 'lucide-react';
 import Header from '../common/Header';
-import BottomNav from '../common/BottomNav';
 import { useGame } from '../../context/GameContext';
 
 export default function HomeScreen() {
@@ -94,8 +93,6 @@ export default function HomeScreen() {
           </button>
         </div>
       </main>
-
-      <BottomNav />
 
       <style>{`
         .screen-container {

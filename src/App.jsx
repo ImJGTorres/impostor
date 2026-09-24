@@ -3,8 +3,6 @@ import { useGame } from './context/GameContext';
 import HomeScreen from './components/screens/HomeScreen';
 import ConfigScreen from './components/screens/ConfigScreen';
 import HandoverScreen from './components/screens/HandoverScreen';
-import PrivacyWarningScreen from './components/screens/PrivacyWarningScreen';
-import RoleRevealScreen from './components/screens/RoleRevealScreen';
 import CluesPhaseScreen from './components/screens/CluesPhaseScreen';
 import VotingScreen from './components/screens/VotingScreen';
 import InnocentEliminatedScreen from './components/screens/InnocentEliminatedScreen';
@@ -12,6 +10,7 @@ import CiviliansWinScreen from './components/screens/CiviliansWinScreen';
 import ImpostorWinsScreen from './components/screens/ImpostorWinsScreen';
 import RulesScreen from './components/screens/RulesScreen';
 import PacksScreen from './components/screens/PacksScreen';
+import BottomNav from './components/common/BottomNav';
 
 export default function App() {
   const { currentScreen } = useGame();
@@ -23,11 +22,9 @@ export default function App() {
       case 'CONFIG':
         return <ConfigScreen />;
       case 'HANDOVER':
-        return <HandoverScreen />;
       case 'PRIVACY':
-        return <PrivacyWarningScreen />;
       case 'REVEAL':
-        return <RoleRevealScreen />;
+        return <HandoverScreen />;
       case 'CLUES':
         return <CluesPhaseScreen />;
       case 'VOTING':
@@ -49,7 +46,10 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {renderCurrentScreen()}
+      <div className="app-screen-viewport">
+        {renderCurrentScreen()}
+      </div>
+      <BottomNav />
     </div>
   );
 }

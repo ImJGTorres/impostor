@@ -32,12 +32,6 @@ export default function Header({ title = 'EL IMPOSTOR', subtitle = 'Lobby', show
         </div>
       </div>
 
-      <div className="header-right">
-        <div className="user-avatar-circle">
-          <User size={18} color="#FFFFFF" />
-        </div>
-      </div>
-
       <style>{`
         .app-header {
           display: flex;

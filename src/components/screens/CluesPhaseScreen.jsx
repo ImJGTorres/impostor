@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, Users, Clock, ArrowRight, Lightbulb, Play, Pause, RotateCcw } from 'lucide-react';
+import { MessageSquare, Users, Clock, ArrowRight, Lightbulb, Play, Pause, RotateCcw, Bell } from 'lucide-react';
 import Header from '../common/Header';
 import { useGame } from '../../context/GameContext';
 
@@ -8,20 +8,58 @@ export default function CluesPhaseScreen() {
     assignedPlayers,
     firstCluePlayer,
     currentRound,
+    discussionTime,
     setCurrentScreen
   } = useGame();
 
   const alivePlayers = assignedPlayers.filter(p => p.isAlive);
 
-  // Temporizador para debate/pistas
-  const [secondsLeft, setSecondsLeft] = useState(90);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  // Temporizador para debate/pistas (inicia corriendo automáticamente)
+  const initialTime = discussionTime || 90;
+  const [secondsLeft, setSecondsLeft] = useState(initialTime);
+  const [isTimerRunning, setIsTimerRunning] = useState(true);
+  const [timeIsUp, setTimeIsUp] = useState(false);
+
+  // Alarma acústica y vibración cuando el tiempo finaliza
+  const playAlarmSound = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+        [0, 0.22, 0.44, 0.66].forEach((delay) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(880, now + delay);
+          gain.gain.setValueAtTime(0.25, now + delay);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.16);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + delay);
+          osc.stop(now + delay + 0.18);
+        });
+      }
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate([300, 100, 300, 100, 400]);
+      }
+    } catch (err) {
+      console.warn('Alarma acústica no ejecutada:', err);
+    }
+  };
 
   useEffect(() => {
     let interval = null;
     if (isTimerRunning && secondsLeft > 0) {
       interval = setInterval(() => {
-        setSecondsLeft(prev => prev - 1);
+        setSecondsLeft(prev => {
+          if (prev <= 1) {
+            setTimeIsUp(true);
+            playAlarmSound();
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
     } else if (secondsLeft === 0) {
       setIsTimerRunning(false);
@@ -34,8 +72,9 @@ export default function CluesPhaseScreen() {
   };
 
   const resetTimer = () => {
-    setIsTimerRunning(false);
-    setSecondsLeft(90);
+    setIsTimerRunning(true);
+    setSecondsLeft(initialTime);
+    setTimeIsUp(false);
   };
 
   const formatTime = (secs) => {
@@ -108,7 +147,9 @@ export default function CluesPhaseScreen() {
             <span className="timer-title">TIEMPO DE DISCUSIÓN</span>
           </div>
           <div className="timer-display-row">
-            <span className="timer-number">{formatTime(secondsLeft)}</span>
+            <span className={`timer-number ${secondsLeft === 0 ? 'time-zero' : ''}`}>
+              {formatTime(secondsLeft)}
+            </span>
             <div className="timer-controls">
               <button
                 type="button"
@@ -129,6 +170,16 @@ export default function CluesPhaseScreen() {
             </div>
           </div>
         </div>
+
+        {secondsLeft === 0 && (
+          <div className="time-up-alert">
+            <Bell size={22} className="bell-alarm-icon" />
+            <div className="time-up-text">
+              <strong className="time-up-strong">¡TIEMPO TERMINADO! ⏰</strong>
+              <p className="time-up-sub">Es momento de abrir el debate final o proceder a votar.</p>
+            </div>
+          </div>
+        )}
 
         {/* Consejo */}
         <div className="tactical-box">
@@ -334,6 +385,59 @@ export default function CluesPhaseScreen() {
           font-weight: 800;
           color: var(--text-main);
           font-variant-numeric: tabular-nums;
+          transition: color 0.2s ease;
+        }
+
+        .timer-number.time-zero {
+          color: var(--primary-red);
+          animation: pulseRed 1s infinite alternate;
+        }
+
+        @keyframes pulseRed {
+          from { opacity: 0.6; }
+          to { opacity: 1; }
+        }
+
+        .time-up-alert {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background-color: #FFF2F0;
+          border: 2px solid var(--primary-red);
+          border-radius: var(--radius-md);
+          padding: 14px 16px;
+          box-shadow: 0 4px 14px rgba(194, 65, 40, 0.15);
+          animation: popIn 0.25s ease-out;
+        }
+
+        .bell-alarm-icon {
+          color: var(--primary-red);
+          flex-shrink: 0;
+          animation: ring 0.5s infinite alternate;
+        }
+
+        @keyframes ring {
+          from { transform: rotate(-10deg); }
+          to { transform: rotate(10deg); }
+        }
+
+        .time-up-text {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .time-up-strong {
+          font-size: 0.88rem;
+          font-weight: 800;
+          color: var(--primary-red);
+          letter-spacing: 0.02em;
+        }
+
+        .time-up-sub {
+          font-size: 0.78rem;
+          color: var(--text-main);
+          line-height: 1.35;
         }
 
         .timer-controls {

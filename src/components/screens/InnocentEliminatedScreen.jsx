@@ -17,30 +17,38 @@ export default function InnocentEliminatedScreen() {
   const remainingImpostors = assignedPlayers.filter(p => p.isImpostor && p.isAlive).length;
   const isHighDanger = remainingCivilians - remainingImpostors <= 1;
 
+  const wasImpostor = Boolean(lastEliminated.wasImpostor);
+
   return (
     <div className="screen-container">
       <Header
         title="EL IMPOSTOR"
-        subtitle="Round Result"
+        subtitle="Resultado de la Votación"
         showBack={true}
         onBack={returnToHome}
       />
 
       <main className="result-content">
         <div className="result-header">
-          <span className="result-eyebrow">EXPULSIÓN INJUSTIFICADA</span>
+          <span className="result-eyebrow">
+            {wasImpostor ? '¡IMPOSTOR ELIMINADO!' : 'EXPULSIÓN INJUSTIFICADA'}
+          </span>
           <h1 className="result-title">
-            ¡{lastEliminated.name} NO era el Impostor!
+            {wasImpostor
+              ? `¡${lastEliminated.name} SÍ era el Impostor!`
+              : `¡${lastEliminated.name} NO era el Impostor!`}
           </h1>
           <p className="result-desc">
-            Los civiles han cometido un grave error de deducción. {lastEliminated.name} era una Civil Inocente y queda eliminada de la partida.
+            {wasImpostor
+              ? `Los civiles han acertado en su deducción. ${lastEliminated.name} era un Agente Infiltrado y ha sido expulsado de la mesa.`
+              : `Los civiles han cometido un grave error de deducción. ${lastEliminated.name} era una Civil Inocente y queda eliminada de la partida.`}
           </p>
         </div>
 
         {/* Card: Perfil del jugador eliminado */}
         <div className="neo-card eliminated-card">
           <div className="eliminated-avatar-wrap">
-            <div className="eliminated-avatar-box">
+            <div className={`eliminated-avatar-box ${wasImpostor ? 'impostor-avatar-box' : ''}`}>
               {lastEliminated.letter}
             </div>
             <div className="cross-badge">
@@ -51,16 +59,27 @@ export default function InnocentEliminatedScreen() {
           <div className="eliminated-info">
             <div className="eliminated-name-row">
               <h2 className="eliminated-name">{lastEliminated.name}</h2>
-              <span className="badge-pill badge-neutral">Eliminada</span>
+              <span className="badge-pill badge-neutral">Expulsado/a</span>
             </div>
 
-            <div className="innocent-role-pill">
-              <ShieldCheck size={14} color="#C24128" />
-              <span>ROL: CIVIL INOCENTE</span>
+            <div className={`innocent-role-pill ${wasImpostor ? 'impostor-pill-dark' : ''}`}>
+              {wasImpostor ? (
+                <>
+                  <span className="drama-icon">🎭</span>
+                  <span>ROL: AGENTE INFILTRADO</span>
+                </>
+              ) : (
+                <>
+                  <ShieldCheck size={14} color="#C24128" />
+                  <span>ROL: CIVIL INOCENTE</span>
+                </>
+              )}
             </div>
 
             <p className="eliminated-note">
-              Queda descalificada de emitir votos y formular pistas en la siguiente ronda.
+              {wasImpostor
+                ? `¡Buen trabajo! Aún quedan ${remainingImpostors} impostores ocultos en la mesa.`
+                : 'Queda descalificada de emitir votos y formular pistas en la siguiente ronda.'}
             </p>
           </div>
         </div>
@@ -70,7 +89,7 @@ export default function InnocentEliminatedScreen() {
           <div className="balance-header">
             <span className="balance-title">BALANCE DE LA MESA</span>
             <span className="badge-pill badge-red">
-              {isHighDanger ? 'Tensión Máxima' : 'Partida en Curso'}
+              {wasImpostor ? 'Golpe Certero' : isHighDanger ? 'Tensión Máxima' : 'Partida en Curso'}
             </span>
           </div>
 
@@ -94,14 +113,21 @@ export default function InnocentEliminatedScreen() {
             </div>
           </div>
 
-          {isHighDanger && (
+          {wasImpostor ? (
+            <div className="success-alert-box">
+              <span className="check-icon">🎯</span>
+              <p className="danger-text" style={{ color: '#047857' }}>
+                ¡Descubrieron a un infiltrado! Los civiles toman ventaja, pero la partida continúa hasta encontrar a todos.
+              </p>
+            </div>
+          ) : isHighDanger ? (
             <div className="danger-alert-box">
               <AlertTriangle size={18} className="danger-icon" />
               <p className="danger-text">
                 ¡Peligro inminente! Si cae un civil más, los impostores igualarán la mesa y ganarán la partida inmediatamente por superioridad táctica.
               </p>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Acción: Siguiente ronda */}

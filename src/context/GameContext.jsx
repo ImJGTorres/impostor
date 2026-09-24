@@ -23,14 +23,15 @@ export function GameProvider({ children }) {
   const defaultMockPlayers = [
     { id: 1, name: 'Sofía', letter: 'S', color: '#C24128', isImpostor: false, isAlive: screenParam !== 'INNOCENT_ELIMINATED' },
     { id: 2, name: 'Mateo', letter: 'M', color: '#2563EB', isImpostor: false, isAlive: true },
-    { id: 3, name: 'Carlos', letter: 'C', color: '#059669', isImpostor: true, isAlive: true },
-    { id: 4, name: 'Camila', letter: 'C', color: '#D97706', isImpostor: false, isAlive: true },
+    { id: 3, name: 'Carlos', letter: 'C', color: '#059669', isImpostor: true, isAlive: screenParam !== 'IMPOSTOR_ELIMINATED_CONTINUES' },
+    { id: 4, name: 'Camila', letter: 'C', color: '#D97706', isImpostor: true, isAlive: true }, // Segunda impostora viva para multi-impostor
     { id: 5, name: 'Andrés', letter: 'A', color: '#7C3AED', isImpostor: false, isAlive: true },
   ];
 
   const getInitialScreen = () => {
     if (!screenParam) return 'HOME';
     if (screenParam === 'REVEAL_CIVIL' || screenParam === 'REVEAL_IMPOSTOR') return 'REVEAL';
+    if (screenParam === 'IMPOSTOR_ELIMINATED_CONTINUES') return 'INNOCENT_ELIMINATED';
     return screenParam.toUpperCase();
   };
 
@@ -49,8 +50,9 @@ export function GameProvider({ children }) {
   });
 
   // Configuración de partida
-  const [playerNames, setPlayerNames] = useState(['Sofía', 'Mateo', 'Carlos', 'Camila', 'Andrés']);
+  const [playerNames, setPlayerNames] = useState([]);
   const [impostorCount, setImpostorCount] = useState(1);
+  const [discussionTime, setDiscussionTime] = useState(90); // en segundos
   const [mainCategory, setMainCategory] = useState('general'); // 'ufps' | 'general'
   const [activeSubtopics, setActiveSubtopics] = useState(['videojuegos', 'comida', 'peliculas']);
 
@@ -74,7 +76,7 @@ export function GameProvider({ children }) {
     return [];
   });
   const [lastEliminated, setLastEliminated] = useState(() => {
-    if (screenParam === 'CIVILIANS_WIN') {
+    if (screenParam === 'CIVILIANS_WIN' || screenParam === 'IMPOSTOR_ELIMINATED_CONTINUES') {
       return { id: 3, name: 'Carlos', letter: 'C', isImpostor: true, wasImpostor: true };
     }
     if (screenParam === 'INNOCENT_ELIMINATED') {
@@ -94,13 +96,13 @@ export function GameProvider({ children }) {
     return true;
   };
 
-  // Eliminar jugador
+  // Eliminar jugador (sin restricciones mínimas fijas para poder limpiar la lista)
   const removePlayer = (nameToRemove) => {
-    if (playerNames.length <= 3) return false;
     setPlayerNames(prev => {
       const next = prev.filter(p => p !== nameToRemove);
-      if (impostorCount > Math.floor(next.length / 2)) {
-        setImpostorCount(Math.max(1, Math.floor(next.length / 2)));
+      const maxAllowed = Math.max(1, Math.floor((next.length - 1) / 2));
+      if (impostorCount > maxAllowed) {
+        setImpostorCount(maxAllowed);
       }
       return next;
     });
@@ -121,6 +123,8 @@ export function GameProvider({ children }) {
 
   // Iniciar partida
   const startNewGame = () => {
+    if (playerNames.length < 3) return;
+
     const wordData = getRandomGameWord(mainCategory, activeSubtopics);
     setSecretInfo(wordData);
 
@@ -147,7 +151,7 @@ export function GameProvider({ children }) {
     const randomStarter = playersWithRoles[Math.floor(Math.random() * playersWithRoles.length)].name;
     setFirstCluePlayer(randomStarter);
 
-    // Ir a pantalla de entrega (Figma 1:127)
+    // Ir a pantalla de entrega y revelación segura (Screen 3)
     setCurrentScreen('HANDOVER');
   };
 
@@ -178,7 +182,7 @@ export function GameProvider({ children }) {
       round: currentRound,
       player: voted.name,
       wasImpostor,
-      roleDescription: wasImpostor ? 'Agente Infiltrado' : 'Civil Inocente expulsada'
+      roleDescription: wasImpostor ? 'Agente Infiltrado (Expulsado)' : 'Civil Inocente (Expulsado)'
     };
     setRoundHistory(prev => [...prev, historyEntry]);
     setLastEliminated({ ...voted, wasImpostor });
@@ -187,28 +191,37 @@ export function GameProvider({ children }) {
     const remainingCivilians = updatedPlayers.filter(p => !p.isImpostor && p.isAlive).length;
     const remainingImpostors = updatedPlayers.filter(p => p.isImpostor && p.isAlive).length;
 
+    // Caso 1: Votaron a un IMPOSTOR
     if (wasImpostor) {
-      // Si eliminaron al impostor
       if (remainingImpostors === 0) {
-        // Victoria de los civiles (Figma 1:987)
+        // No quedan más impostores: ¡Victoria total de los civiles!
         confetti({
-          particleCount: 80,
-          spread: 70,
+          particleCount: 90,
+          spread: 80,
           origin: { y: 0.6 }
         });
         setCurrentScreen('CIVILIANS_WIN');
         return;
+      } else {
+        // ¡Sí era impostor, pero aún quedan más impostores ocultos!
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.6 }
+        });
+        setCurrentScreen('INNOCENT_ELIMINATED'); // Mostrar pantalla de expulsión con fue impostor
+        return;
       }
     }
 
-    // Comprobar si los impostores igualan o superan a los civiles
+    // Caso 2: Votaron a un CIVIL INOCENTE
     if (remainingImpostors >= remainingCivilians) {
-      // Victoria de los impostores (Figma 5:122)
+      // Los impostores igualaron o superaron a los civiles: ¡Ganan los impostores!
       setCurrentScreen('IMPOSTOR_WINS');
       return;
     }
 
-    // Si eliminaron a un inocente y el juego sigue (Figma 5:2)
+    // El juego continúa con un civil menos
     setCurrentScreen('INNOCENT_ELIMINATED');
   };
 
@@ -245,6 +258,8 @@ export function GameProvider({ children }) {
         removePlayer,
         impostorCount,
         setImpostorCount,
+        discussionTime,
+        setDiscussionTime,
         mainCategory,
         setMainCategory,
         activeSubtopics,

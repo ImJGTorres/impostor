@@ -1,7 +1,6 @@
 import React from 'react';
 import { ArrowRight, Lightbulb, Smartphone, MessageSquare, Search, Vote } from 'lucide-react';
 import Header from '../common/Header';
-import BottomNav from '../common/BottomNav';
 import { useGame } from '../../context/GameContext';
 import { GAME_RULES, PRO_TIP } from '../../data/gameRules';
 
@@ -82,8 +81,6 @@ export default function RulesScreen() {
           <span className="rules-caption">Partida local • 3 a 12 participantes</span>
         </div>
       </main>
-
-      <BottomNav />
 
       <style>{`
         .rules-content {

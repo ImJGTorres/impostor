@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { GraduationCap, Globe, Check, ArrowRight, BookOpen, Layers } from 'lucide-react';
 import Header from '../common/Header';
-import BottomNav from '../common/BottomNav';
 import { useGame } from '../../context/GameContext';
 import { UFPS_CATEGORY, GENERAL_SUBTOPICS } from '../../data/categories';
 
@@ -158,8 +157,6 @@ export default function PacksScreen() {
           )}
         </div>
       </main>
-
-      <BottomNav />
 
       <style>{`
         .packs-content {

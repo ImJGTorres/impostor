@@ -13,10 +13,10 @@ import {
   Clapperboard,
   Trophy,
   ArrowRight,
-  Info
+  Info,
+  Clock
 } from 'lucide-react';
 import Header from '../common/Header';
-import BottomNav from '../common/BottomNav';
 import { useGame } from '../../context/GameContext';
 import { GENERAL_SUBTOPICS } from '../../data/categories';
 
@@ -27,6 +27,8 @@ export default function ConfigScreen() {
     removePlayer,
     impostorCount,
     setImpostorCount,
+    discussionTime,
+    setDiscussionTime,
     mainCategory,
     setMainCategory,
     activeSubtopics,
@@ -37,6 +39,28 @@ export default function ConfigScreen() {
 
   const [inputName, setInputName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [customTimeInput, setCustomTimeInput] = useState(String(discussionTime));
+
+  const handleCustomTimeChange = (e) => {
+    const val = e.target.value;
+    setCustomTimeInput(val);
+    const parsed = parseInt(val, 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      setDiscussionTime(Math.min(999, parsed));
+    }
+  };
+
+  const handleCustomTimeBlur = () => {
+    const parsed = parseInt(customTimeInput, 10);
+    if (isNaN(parsed) || parsed < 5) {
+      setDiscussionTime(30);
+      setCustomTimeInput('30');
+    } else {
+      const clamped = Math.min(999, Math.max(5, parsed));
+      setDiscussionTime(clamped);
+      setCustomTimeInput(String(clamped));
+    }
+  };
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
@@ -50,13 +74,14 @@ export default function ConfigScreen() {
     }
   };
 
+  const maxImpostors = Math.max(1, Math.floor((playerNames.length - 1) / 2));
+
   const handleDecrementImpostors = () => {
     if (impostorCount > 1) {
       setImpostorCount(prev => prev - 1);
     }
   };
 
-  const maxImpostors = Math.max(1, Math.floor((playerNames.length - 1) / 2));
   const handleIncrementImpostors = () => {
     if (impostorCount < maxImpostors) {
       setImpostorCount(prev => prev + 1);
@@ -87,7 +112,7 @@ export default function ConfigScreen() {
         <div className="config-header">
           <h1 className="config-title">Configuración de partida</h1>
           <p className="config-subtitle">
-            Ajusta los participantes y la baraja temática para esta ronda.
+            Ajusta los participantes, tiempo y temática para esta ronda.
           </p>
         </div>
 
@@ -98,7 +123,9 @@ export default function ConfigScreen() {
               <Users size={18} className="section-icon" />
               <h2 className="section-title">Participantes</h2>
             </div>
-            <span className="badge-pill badge-red">{playerNames.length} añadidos</span>
+            <span className={`badge-pill ${playerNames.length >= 3 ? 'badge-red' : 'badge-neutral'}`}>
+              {playerNames.length} {playerNames.length === 1 ? 'añadido' : 'añadidos'}
+            </span>
           </div>
 
           <form onSubmit={handleAddSubmit} className="add-player-row">
@@ -121,12 +148,19 @@ export default function ConfigScreen() {
 
           {errorMsg && <p className="error-text">{errorMsg}</p>}
 
-          <div className="players-chips-wrap">
-            {playerNames.map((name, index) => (
-              <div key={index} className="player-chip">
-                <span className="chip-avatar">{name.charAt(0).toUpperCase()}</span>
-                <span className="chip-name">{name}</span>
-                {playerNames.length > 3 && (
+          {playerNames.length === 0 ? (
+            <div className="empty-players-box">
+              <p className="empty-players-msg">
+                Aún no hay participantes en la lista.<br />
+                Escribe un nombre y pulsa <strong>Añadir</strong> (mínimo 3 jugadores).
+              </p>
+            </div>
+          ) : (
+            <div className="players-chips-wrap">
+              {playerNames.map((name, index) => (
+                <div key={index} className="player-chip">
+                  <span className="chip-avatar">{name.charAt(0).toUpperCase()}</span>
+                  <span className="chip-name">{name}</span>
                   <button
                     type="button"
                     className="chip-remove-btn"
@@ -135,14 +169,18 @@ export default function ConfigScreen() {
                   >
                     <X size={14} />
                   </button>
-                )}
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="card-info-footer">
             <Info size={14} className="info-icon" />
-            <span>Mínimo 3 jugadores para iniciar</span>
+            <span>
+              {playerNames.length < 3
+                ? `Mínimo 3 jugadores para iniciar (faltan ${3 - playerNames.length})`
+                : '¡Mesa completa! Puedes añadir hasta 12 jugadores'}
+            </span>
           </div>
         </div>
 
@@ -176,7 +214,7 @@ export default function ConfigScreen() {
               type="button"
               className="stepper-btn"
               onClick={handleIncrementImpostors}
-              disabled={impostorCount >= maxImpostors}
+              disabled={impostorCount >= maxImpostors || playerNames.length < 3}
               aria-label="Aumentar impostores"
             >
               <Plus size={18} />
@@ -185,11 +223,65 @@ export default function ConfigScreen() {
 
           <div className="card-info-footer">
             <span className="red-dot"></span>
-            <span>{impostorCount} {impostorCount === 1 ? 'impostor' : 'impostores'} en esta sala</span>
+            <span>
+              {playerNames.length < 3
+                ? 'Agrega al menos 3 jugadores para configurar infiltrados'
+                : `${impostorCount} ${impostorCount === 1 ? 'impostor' : 'impostores'} en esta sala`}
+            </span>
           </div>
         </div>
 
-        {/* Card 3: Categoría principal */}
+        {/* Card 3: Tiempo de discusión (Ronda de pistas) */}
+        <div className="neo-card config-card">
+          <div className="card-top-row">
+            <div className="section-title-group">
+              <Clock size={18} className="section-icon" />
+              <h2 className="section-title">Tiempo de debate</h2>
+            </div>
+            <span className="badge-pill badge-red">{discussionTime}s por ronda</span>
+          </div>
+
+          <div className="time-chips-wrap">
+            {[30, 45, 60, 90, 120, 180].map((timeSecs) => (
+              <button
+                key={timeSecs}
+                type="button"
+                className={`time-chip ${discussionTime === timeSecs ? 'active' : ''}`}
+                onClick={() => {
+                  setDiscussionTime(timeSecs);
+                  setCustomTimeInput(String(timeSecs));
+                }}
+              >
+                {timeSecs < 60 ? `${timeSecs}s` : `${timeSecs / 60}m`}
+              </button>
+            ))}
+          </div>
+
+          {/* Opción de escribir el tiempo deseado manualmente */}
+          <div className="custom-time-row">
+            <span className="custom-time-label">O escribe la cantidad exacta:</span>
+            <div className="custom-time-input-group">
+              <input
+                type="number"
+                min="5"
+                max="999"
+                className="custom-time-input"
+                placeholder="Ej. 75"
+                value={customTimeInput}
+                onChange={handleCustomTimeChange}
+                onBlur={handleCustomTimeBlur}
+              />
+              <span className="custom-time-unit">seg</span>
+            </div>
+          </div>
+
+          <div className="card-info-footer">
+            <span className="red-dot"></span>
+            <span>Sonará una alarma acústica en el celular cuando el tiempo finalice</span>
+          </div>
+        </div>
+
+        {/* Card 4: Categoría principal */}
         <div className="neo-card config-card">
           <div className="card-top-row">
             <div className="section-title-group">
@@ -279,17 +371,25 @@ export default function ConfigScreen() {
 
         {/* Botón de Iniciar */}
         <div className="config-actions">
-          <button className="btn-primary" onClick={startNewGame}>
+          <button
+            className="btn-primary"
+            onClick={startNewGame}
+            disabled={playerNames.length < 3}
+            style={{
+              opacity: playerNames.length < 3 ? 0.45 : 1,
+              cursor: playerNames.length < 3 ? 'not-allowed' : 'pointer'
+            }}
+          >
             <span>Comenzar partida</span>
             <ArrowRight size={18} />
           </button>
           <p className="action-caption">
-            La pantalla se bloqueará para el primer jugador al pulsar iniciar.
+            {playerNames.length < 3
+              ? 'Añade al menos 3 jugadores para poder iniciar la partida.'
+              : 'La pantalla se bloqueará para el primer jugador al pulsar iniciar.'}
           </p>
         </div>
       </main>
-
-      <BottomNav />
 
       <style>{`
         .config-content {
@@ -460,6 +560,105 @@ export default function ConfigScreen() {
           font-size: 0.78rem;
           color: var(--text-muted);
           font-weight: 500;
+        }
+
+        .empty-players-box {
+          background-color: #FAF8F5;
+          border: 1.5px dashed var(--border-light);
+          border-radius: var(--radius-md);
+          padding: 16px;
+          text-align: center;
+        }
+
+        .empty-players-msg {
+          font-size: 0.82rem;
+          color: var(--text-muted);
+          line-height: 1.4;
+        }
+
+        .empty-players-msg strong {
+          color: var(--primary-red);
+        }
+
+        .time-chips-wrap {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .time-chip {
+          padding: 8px 16px;
+          background-color: #FFFFFF;
+          border: 1.5px solid var(--border-light);
+          border-radius: var(--radius-md);
+          font-family: inherit;
+          font-size: 0.88rem;
+          font-weight: 700;
+          color: var(--text-main);
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+
+        .time-chip:hover {
+          border-color: var(--primary-red);
+          background-color: var(--bg-accent-light);
+        }
+
+        .time-chip.active {
+          background-color: var(--primary-red);
+          border-color: var(--border-dark);
+          color: #FFFFFF;
+          box-shadow: 1px 1px 0px var(--border-dark);
+        }
+
+        .custom-time-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          background-color: #FAF8F5;
+          border: 1.5px solid var(--border-light);
+          border-radius: var(--radius-md);
+          padding: 8px 12px;
+          margin-top: 4px;
+        }
+
+        .custom-time-label {
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: var(--text-muted);
+          flex: 1;
+        }
+
+        .custom-time-input-group {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background-color: #FFFFFF;
+          border: 1.5px solid var(--border-dark);
+          border-radius: var(--radius-sm);
+          padding: 4px 8px;
+          box-shadow: 1px 1px 0px var(--border-dark);
+        }
+
+        .custom-time-input {
+          width: 54px;
+          border: none;
+          background: transparent;
+          font-family: inherit;
+          font-size: 0.95rem;
+          font-weight: 800;
+          color: var(--primary-red);
+          text-align: center;
+          outline: none;
+        }
+
+        .custom-time-unit {
+          font-size: 0.72rem;
+          font-weight: 800;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
         }
 
         .info-icon {

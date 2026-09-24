@@ -1,5 +1,13 @@
-import React, { createContext, useContext, useState } from 'react';
-import { getRandomGameWord } from '../data/categories';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getRandomGameWord, UFPS_CATEGORY, GENERAL_SUBTOPICS } from '../data/categories';
+import {
+  loadInitialWords,
+  loadWordsFromGoogleSheets,
+  loadWordsFromFile,
+  getSavedSheetsUrl,
+  resetToDefaultWords,
+  downloadExcelTemplate
+} from '../data/excelLoader';
 import confetti from 'canvas-confetti';
 
 const GameContext = createContext();
@@ -20,6 +28,12 @@ export function GameProvider({ children }) {
   const [currentScreen, setCurrentScreen] = useState('HOME');
   const [activeTab, setActiveTab] = useState('lobby'); // 'lobby' | 'packs' | 'rules'
 
+  // Gestión de palabras y sincronización Excel / Google Sheets
+  const [dynamicWordsData, setDynamicWordsData] = useState(null);
+  const [isLoadingWords, setIsLoadingWords] = useState(false);
+  const [wordsSyncStatus, setWordsSyncStatus] = useState(null); // { type: 'success'|'error', message: string }
+  const [googleSheetsUrl, setGoogleSheetsUrl] = useState('');
+
   // Configuración de partida
   const [playerNames, setPlayerNames] = useState(['Sofía', 'Mateo', 'Carlos', 'Camila', 'Andrés']);
   const [impostorCount, setImpostorCount] = useState(1);
@@ -39,6 +53,92 @@ export function GameProvider({ children }) {
   const [roundHistory, setRoundHistory] = useState([]);
   const [lastEliminated, setLastEliminated] = useState(null);
   const [firstCluePlayer, setFirstCluePlayer] = useState('');
+
+  // Carga inicial de palabras al montar la app
+  useEffect(() => {
+    async function initWords() {
+      setIsLoadingWords(true);
+      const savedUrl = getSavedSheetsUrl();
+      if (savedUrl) setGoogleSheetsUrl(savedUrl);
+
+      const tree = await loadInitialWords();
+      if (tree) {
+        setDynamicWordsData(tree);
+      }
+      setIsLoadingWords(false);
+    }
+    initWords();
+  }, []);
+
+  // Sincronizar con Google Sheets
+  const syncGoogleSheets = async (urlToSync) => {
+    const targetUrl = urlToSync || googleSheetsUrl;
+    if (!targetUrl.trim()) {
+      setWordsSyncStatus({ type: 'error', message: 'Por favor ingresa el enlace de Google Sheets.' });
+      return false;
+    }
+
+    setIsLoadingWords(true);
+    setWordsSyncStatus(null);
+    try {
+      const tree = await loadWordsFromGoogleSheets(targetUrl);
+      setDynamicWordsData(tree);
+      setGoogleSheetsUrl(targetUrl);
+      setWordsSyncStatus({
+        type: 'success',
+        message: `¡Sincronizado con éxito! Se cargaron ${tree.totalWords} palabras (${tree.ufpsWords.length} Sistemas / ${tree.totalWords - tree.ufpsWords.length} Generales).`
+      });
+      setIsLoadingWords(false);
+      return true;
+    } catch (err) {
+      setWordsSyncStatus({ type: 'error', message: err.message || 'Error al sincronizar con Google Sheets.' });
+      setIsLoadingWords(false);
+      return false;
+    }
+  };
+
+  // Subir archivo local (.xlsx o .csv)
+  const uploadCustomFile = async (file) => {
+    if (!file) return false;
+    setIsLoadingWords(true);
+    setWordsSyncStatus(null);
+    try {
+      const tree = await loadWordsFromFile(file);
+      setDynamicWordsData(tree);
+      setWordsSyncStatus({
+        type: 'success',
+        message: `¡Archivo cargado! Se procesaron ${tree.totalWords} palabras correctamente.`
+      });
+      setIsLoadingWords(false);
+      return true;
+    } catch (err) {
+      setWordsSyncStatus({ type: 'error', message: err.message || 'Error al leer el archivo Excel.' });
+      setIsLoadingWords(false);
+      return false;
+    }
+  };
+
+  // Restablecer al catálogo base
+  const resetWordsCatalog = async () => {
+    resetToDefaultWords();
+    setGoogleSheetsUrl('');
+    setWordsSyncStatus(null);
+    setIsLoadingWords(true);
+    const tree = await loadInitialWords();
+    setDynamicWordsData(tree);
+    setIsLoadingWords(false);
+    setWordsSyncStatus({ type: 'success', message: 'Catálogo restablecido al predeterminado.' });
+  };
+
+  // Subtemas actuales disponibles para General
+  const currentGeneralSubtopics = dynamicWordsData?.generalSubtopics?.length > 0
+    ? dynamicWordsData.generalSubtopics
+    : GENERAL_SUBTOPICS;
+
+  // Palabras de UFPS actuales
+  const currentUfpsWords = dynamicWordsData?.ufpsWords?.length > 0
+    ? dynamicWordsData.ufpsWords
+    : UFPS_CATEGORY.words;
 
   // Agregar jugador
   const addPlayer = (name) => {
@@ -77,7 +177,7 @@ export function GameProvider({ children }) {
 
   // Iniciar partida
   const startNewGame = () => {
-    const wordData = getRandomGameWord(mainCategory, activeSubtopics);
+    const wordData = getRandomGameWord(mainCategory, activeSubtopics, dynamicWordsData);
     setSecretInfo(wordData);
 
     // Asignar impostores de forma aleatoria
@@ -103,7 +203,7 @@ export function GameProvider({ children }) {
     const randomStarter = playersWithRoles[Math.floor(Math.random() * playersWithRoles.length)].name;
     setFirstCluePlayer(randomStarter);
 
-    // Ir a pantalla de entrega (Figma 1:127)
+    // Ir a pantalla de entrega
     setCurrentScreen('HANDOVER');
   };
 
@@ -146,7 +246,6 @@ export function GameProvider({ children }) {
     if (wasImpostor) {
       // Si eliminaron al impostor
       if (remainingImpostors === 0) {
-        // Victoria de los civiles (Figma 1:987)
         confetti({
           particleCount: 80,
           spread: 70,
@@ -159,19 +258,17 @@ export function GameProvider({ children }) {
 
     // Comprobar si los impostores igualan o superan a los civiles
     if (remainingImpostors >= remainingCivilians) {
-      // Victoria de los impostores (Figma 5:122)
       setCurrentScreen('IMPOSTOR_WINS');
       return;
     }
 
-    // Si eliminaron a un inocente y el juego sigue (Figma 5:2)
+    // Si eliminaron a un inocente y el juego sigue
     setCurrentScreen('INNOCENT_ELIMINATED');
   };
 
   // Comenzar nueva ronda tras voto inocente
   const startNextRoundOfClues = () => {
     setCurrentRound(prev => prev + 1);
-    // Cambiar el jugador que inicia la nueva ronda entre los vivos
     const alive = assignedPlayers.filter(p => p.isAlive);
     if (alive.length > 0) {
       const nextStarter = alive[Math.floor(Math.random() * alive.length)].name;
@@ -218,7 +315,19 @@ export function GameProvider({ children }) {
         lastEliminated,
         firstCluePlayer,
         startNextRoundOfClues,
-        returnToHome
+        returnToHome,
+        // Nuevas propiedades de gestión Excel / Sheets
+        dynamicWordsData,
+        currentUfpsWords,
+        currentGeneralSubtopics,
+        isLoadingWords,
+        wordsSyncStatus,
+        googleSheetsUrl,
+        setGoogleSheetsUrl,
+        syncGoogleSheets,
+        uploadCustomFile,
+        resetWordsCatalog,
+        downloadExcelTemplate
       }}
     >
       {children}

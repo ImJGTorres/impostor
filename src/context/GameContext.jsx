@@ -50,8 +50,18 @@ export function GameProvider({ children }) {
   };
 
   // Navegación principal y pestañas
-  const [currentScreen, setCurrentScreen] = useState('HOME');
-  const [activeTab, setActiveTab] = useState('lobby'); // 'lobby' | 'packs' | 'rules'
+  const [currentScreen, setCurrentScreen] = useState(getInitialScreen);
+  const [activeTab, setActiveTab] = useState(() => {
+    if (screenParam === 'RULES') return 'rules';
+    if (screenParam === 'PACKS') return 'packs';
+    return 'lobby';
+  });
+
+  // Gestión de palabras y sincronización Excel / Google Sheets
+  const [dynamicWordsData, setDynamicWordsData] = useState(null);
+  const [isLoadingWords, setIsLoadingWords] = useState(false);
+  const [wordsSyncStatus, setWordsSyncStatus] = useState(null); // { type: 'success'|'error', message: string }
+  const [googleSheetsUrl, setGoogleSheetsUrl] = useState('');
 
   // Configuración de partida
   const [playerNames, setPlayerNames] = useState([]);
@@ -213,7 +223,9 @@ export function GameProvider({ children }) {
 
   // Iniciar partida
   const startNewGame = () => {
-    const wordData = getRandomGameWord(mainCategory, activeSubtopics);
+    if (playerNames.length < 3) return;
+
+    const wordData = getRandomGameWord(mainCategory, activeSubtopics, dynamicWordsData);
     setSecretInfo(wordData);
 
     // Asignar impostores de forma aleatoria

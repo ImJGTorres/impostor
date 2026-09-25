@@ -1,8 +1,11 @@
 services:
   - type: web
-    name: el-impostor-app
-    env: docker
-    plan: free
-    region: oregon
-    dockerfilePath: ./Dockerfile
+    name: el-impostor
+    env: static
+    buildCommand: npm install -g pnpm && pnpm install && pnpm build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
     autoDeploy: true

@@ -4,3 +4,6 @@ dist
 .gitignore
 *.md
 .vscode
+capturas_pantallas
+disenos_figma_referencia
+scripts

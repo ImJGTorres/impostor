@@ -10,7 +10,8 @@ export default function ImpostorWinsScreen() {
     roundHistory,
     currentRound,
     startNewGame,
-    returnToHome
+    returnToHome,
+    withClues
   } = useGame();
 
   const impostors = assignedPlayers.filter(p => p.isImpostor);
@@ -69,10 +70,18 @@ export default function ImpostorWinsScreen() {
 
         {/* Card: Pista Maestra de Camuflaje */}
         <div className="neo-card master-hint-card">
-          <span className="master-hint-label">PISTA MAESTRA DE CAMUFLAJE</span>
-          <p className="master-hint-quote">“{secretInfo.hint}”</p>
+          <span className="master-hint-label">
+            {withClues ? 'PISTA MAESTRA DE CAMUFLAJE' : 'VICTORIA EN MODO A CIEGAS'}
+          </span>
+          <p className="master-hint-quote">
+            {withClues ? `“${secretInfo.hint}”` : '“Sin pistas ni ayuda: Victoria perfecta a ciegas”'}
+          </p>
           <div className="master-hint-footer">
-            <span>Persuadió con éxito a los civiles en la mesa</span>
+            <span>
+              {withClues
+                ? 'Persuadió con éxito a los civiles en la mesa'
+                : 'Logró camuflarse magistralmente sin conocer la palabra ni tener pistas'}
+            </span>
           </div>
         </div>
 

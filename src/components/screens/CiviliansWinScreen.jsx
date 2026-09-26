@@ -9,7 +9,8 @@ export default function CiviliansWinScreen() {
     lastEliminated,
     secretInfo,
     startNewGame,
-    returnToHome
+    returnToHome,
+    withClues
   } = useGame();
 
   useEffect(() => {
@@ -62,14 +63,22 @@ export default function CiviliansWinScreen() {
         {/* Card: Pista del impostor */}
         <div className="neo-card hint-reveal-card">
           <div className="card-mini-header">
-            <span className="mini-label">PISTA DE CAMUFLAJE ASIGNADA</span>
-            <span className="hint-emoji">🗣️</span>
+            <span className="mini-label">
+              {withClues ? 'PISTA DE CAMUFLAJE ASIGNADA' : 'MODO DE JUEGO: SIN PISTA'}
+            </span>
+            <span className="hint-emoji">{withClues ? '🗣️' : '🕶️'}</span>
           </div>
-          <p className="hint-quote">“{secretInfo.hint}”</p>
+          {withClues ? (
+            <p className="hint-quote">“{secretInfo.hint}”</p>
+          ) : (
+            <p className="hint-quote">“El impostor jugó a ciegas sin ninguna pista de apoyo”</p>
+          )}
           <div className="hint-analysis-row">
             <Info size={14} className="info-icon" />
             <span className="hint-analysis-text">
-              Los civiles detectaron la sospecha y lograron desenmascarar al agente infiltrado a tiempo.
+              {withClues
+                ? 'Los civiles detectaron la sospecha y lograron desenmascarar al agente infiltrado a tiempo.'
+                : 'A pesar del desafío a ciegas, los civiles detectaron inconsistencias y descubrieron al infiltrado.'}
             </span>
           </div>
         </div>

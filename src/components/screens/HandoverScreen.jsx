@@ -20,7 +20,8 @@ export default function HandoverScreen() {
     assignedPlayers,
     secretInfo,
     nextPlayerTurn,
-    setCurrentScreen
+    setCurrentScreen,
+    withClues
   } = useGame();
 
   const isPreviewReveal = typeof window !== 'undefined' && (
@@ -132,7 +133,7 @@ export default function HandoverScreen() {
                   </div>
 
                   <div className="civil-shield-badge">
-                    <ShieldCheck size={18} color="#C24128" />
+                    <ShieldCheck size={20} color="#059669" strokeWidth={2.5} />
                     <span>ERES CIVIL</span>
                   </div>
 
@@ -156,13 +157,26 @@ export default function HandoverScreen() {
                     <span>{secretInfo.categoryName}</span>
                   </div>
 
-                  <div className="impostor-camouflage-box">
-                    <div className="camo-header">
-                      <span className="camo-q">?</span>
-                      <span className="camo-title">PISTA DE CAMUFLAJE</span>
+                  {withClues ? (
+                    <div className="impostor-camouflage-box">
+                      <div className="camo-header">
+                        <span className="camo-q">?</span>
+                        <span className="camo-title">PISTA DE CAMUFLAJE</span>
+                      </div>
+                      <h2 className="camo-hint-text">{secretInfo.hint}</h2>
                     </div>
-                    <h2 className="camo-hint-text">{secretInfo.hint}</h2>
-                  </div>
+                  ) : (
+                    <div className="impostor-blind-box">
+                      <div className="blind-header">
+                        <EyeOff size={16} color="#C24128" />
+                        <span className="blind-title">MODO SIN PISTA</span>
+                      </div>
+                      <h2 className="blind-alert-title">¡JUEGAS A CIEGAS!</h2>
+                      <p className="blind-desc">
+                        No tienes pista ni conoces la palabra. Escucha con atención para deducir de qué hablan.
+                      </p>
+                    </div>
+                  )}
 
                   <p className="release-hint">⚠️ Suelta el botón para ocultar</p>
                 </div>
@@ -404,6 +418,7 @@ export default function HandoverScreen() {
 
         .civil-card {
           background-color: #FFFFFF;
+          border-color: #059669;
         }
 
         .impostor-card {
@@ -440,15 +455,16 @@ export default function HandoverScreen() {
         .civil-shield-badge {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          background-color: var(--bg-accent-light);
-          border: 1px solid var(--primary-red);
-          padding: 6px 14px;
+          gap: 7px;
+          background-color: #ECFDF5;
+          border: 2px solid #059669;
+          padding: 7px 18px;
           border-radius: var(--radius-full);
-          font-size: 0.82rem;
+          font-size: 0.92rem;
           font-weight: 800;
-          color: var(--primary-red);
-          letter-spacing: 0.04em;
+          color: #047857;
+          letter-spacing: 0.06em;
+          box-shadow: 2px 2px 0px #059669;
         }
 
         .word-reveal-box {
@@ -540,6 +556,48 @@ export default function HandoverScreen() {
           font-weight: 800;
           color: var(--text-main);
           line-height: 1.3;
+        }
+
+        .impostor-blind-box {
+          width: 100%;
+          background-color: #FFFFFF;
+          border: 1.5px solid var(--border-dark);
+          border-radius: var(--radius-md);
+          padding: 10px 12px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+          box-shadow: 2px 2px 0px var(--border-dark);
+        }
+
+        .blind-header {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .blind-title {
+          font-size: 0.72rem;
+          font-weight: 800;
+          color: var(--primary-red);
+          letter-spacing: 0.05em;
+        }
+
+        .blind-alert-title {
+          font-size: 1.05rem;
+          font-weight: 900;
+          color: #1C1917;
+          margin: 0;
+          letter-spacing: 0.04em;
+        }
+
+        .blind-desc {
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          line-height: 1.25;
+          margin: 0;
+          text-align: center;
         }
 
         .release-hint {

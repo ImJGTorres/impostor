@@ -27,6 +27,8 @@ export default function ConfigScreen() {
     removePlayer,
     impostorCount,
     setImpostorCount,
+    withClues,
+    setWithClues,
     discussionTime,
     setDiscussionTime,
     mainCategory,
@@ -232,7 +234,59 @@ export default function ConfigScreen() {
           </div>
         </div>
 
-        {/* Card 3: Tiempo de discusión (Ronda de pistas) */}
+        {/* Card 3: Modo de pistas (Con o Sin pista para el impostor) */}
+        <div className="neo-card config-card">
+          <div className="card-top-row">
+            <div className="section-title-group">
+              <span className="section-emoji">{withClues ? '💡' : '🕶️'}</span>
+              <h2 className="section-title">Pistas de camuflaje</h2>
+            </div>
+            <span className={`badge-pill ${withClues ? 'badge-clue-active' : 'badge-neutral'}`}>
+              {withClues ? 'CON PISTA' : 'SIN PISTA'}
+            </span>
+          </div>
+
+          <div className="clue-toggle-container">
+            <button
+              type="button"
+              className={`clue-mode-btn ${withClues ? 'active' : ''}`}
+              onClick={() => setWithClues(true)}
+              aria-label="Jugar con pista para el impostor"
+            >
+              <div className="clue-btn-icon">💡</div>
+              <div className="clue-btn-info">
+                <span className="clue-btn-title">JUGAR CON PISTA</span>
+                <span className="clue-btn-desc">El impostor recibe una pista para orientarse y defenderse</span>
+              </div>
+              {withClues && <span className="clue-check-badge"><Check size={16} /></span>}
+            </button>
+
+            <button
+              type="button"
+              className={`clue-mode-btn ${!withClues ? 'active' : ''}`}
+              onClick={() => setWithClues(false)}
+              aria-label="Jugar sin pista para el impostor"
+            >
+              <div className="clue-btn-icon">🕶️</div>
+              <div className="clue-btn-info">
+                <span className="clue-btn-title">JUGAR SIN PISTA</span>
+                <span className="clue-btn-desc">Modo difícil: el impostor juega a ciegas sin ninguna ayuda</span>
+              </div>
+              {!withClues && <span className="clue-check-badge"><Check size={16} /></span>}
+            </button>
+          </div>
+
+          <div className="card-info-footer">
+            <span className="red-dot"></span>
+            <span>
+              {withClues
+                ? 'El infiltrado tendrá una frase de apoyo para disimular entre los civiles'
+                : 'Modo hardcore: el impostor debe adivinar de qué hablan solo escuchando'}
+            </span>
+          </div>
+        </div>
+
+        {/* Card 4: Tiempo de discusión (Ronda de pistas) */}
         <div className="neo-card config-card">
           <div className="card-top-row">
             <div className="section-title-group">
@@ -888,6 +942,88 @@ export default function ConfigScreen() {
           font-size: 0.78rem;
           color: var(--text-muted);
           line-height: 1.35;
+        }
+
+        /* MODO DE PISTAS (CON / SIN PISTA) */
+        .badge-clue-active {
+          background-color: var(--primary-red);
+          color: #FFFFFF;
+        }
+
+        .clue-toggle-container {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .clue-mode-btn {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 14px;
+          background-color: #FFFFFF;
+          border: 2px solid var(--border-dark);
+          border-radius: var(--radius-md);
+          cursor: pointer;
+          transition: all 0.15s ease;
+          text-align: left;
+          box-shadow: 2px 2px 0px var(--border-dark);
+          font-family: inherit;
+        }
+
+        .clue-mode-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 3px 3px 0px var(--border-dark);
+        }
+
+        .clue-mode-btn.active {
+          background-color: var(--bg-accent-light);
+          border-color: var(--primary-red);
+          box-shadow: 3px 3px 0px var(--primary-red);
+        }
+
+        .clue-btn-icon {
+          font-size: 1.5rem;
+          line-height: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .clue-btn-info {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .clue-btn-title {
+          font-size: 0.88rem;
+          font-weight: 800;
+          letter-spacing: 0.03em;
+          color: var(--text-main);
+        }
+
+        .clue-mode-btn.active .clue-btn-title {
+          color: var(--primary-red);
+        }
+
+        .clue-btn-desc {
+          font-size: 0.74rem;
+          color: var(--text-muted);
+          line-height: 1.25;
+        }
+
+        .clue-check-badge {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background-color: var(--primary-red);
+          color: #FFFFFF;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
         }
       `}</style>
     </div>

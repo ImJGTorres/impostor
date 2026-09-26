@@ -62,7 +62,7 @@ export default function InnocentEliminatedScreen() {
               <span className="badge-pill badge-neutral">Expulsado/a</span>
             </div>
 
-            <div className={`innocent-role-pill ${wasImpostor ? 'impostor-pill-dark' : ''}`}>
+            <div className={`innocent-role-pill ${wasImpostor ? 'impostor-pill-dark' : 'civil-pill-green'}`}>
               {wasImpostor ? (
                 <>
                   <span className="drama-icon">🎭</span>
@@ -70,7 +70,7 @@ export default function InnocentEliminatedScreen() {
                 </>
               ) : (
                 <>
-                  <ShieldCheck size={14} color="#C24128" />
+                  <ShieldCheck size={14} color="#059669" strokeWidth={2.5} />
                   <span>ROL: CIVIL INOCENTE</span>
                 </>
               )}
@@ -248,6 +248,12 @@ export default function InnocentEliminatedScreen() {
           color: var(--primary-red);
           letter-spacing: 0.04em;
           align-self: flex-start;
+        }
+
+        .innocent-role-pill.civil-pill-green {
+          background-color: #ECFDF5;
+          border: 1px solid #059669;
+          color: #047857;
         }
 
         .eliminated-note {

@@ -66,6 +66,7 @@ export function GameProvider({ children }) {
   // Configuración de partida
   const [playerNames, setPlayerNames] = useState([]);
   const [impostorCount, setImpostorCount] = useState(1);
+  const [withClues, setWithClues] = useState(true); // true = Con pista, false = Sin pista
   const [discussionTime, setDiscussionTime] = useState(90); // en segundos
   const [mainCategory, setMainCategory] = useState('general'); // 'ufps' | 'general'
   const [activeSubtopics, setActiveSubtopics] = useState(['videojuegos', 'comida', 'peliculas']);
@@ -357,6 +358,8 @@ export function GameProvider({ children }) {
         removePlayer,
         impostorCount,
         setImpostorCount,
+        withClues,
+        setWithClues,
         discussionTime,
         setDiscussionTime,
         mainCategory,

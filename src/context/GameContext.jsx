@@ -31,8 +31,8 @@ export function GameProvider({ children }) {
   const defaultMockPlayers = [
     { id: 1, name: 'Sofía', letter: 'S', color: '#C24128', isImpostor: false, isAlive: screenParam !== 'INNOCENT_ELIMINATED' },
     { id: 2, name: 'Mateo', letter: 'M', color: '#2563EB', isImpostor: false, isAlive: true },
-    { id: 3, name: 'Carlos', letter: 'C', color: '#059669', isImpostor: true, isAlive: screenParam !== 'IMPOSTOR_ELIMINATED_CONTINUES' },
-    { id: 4, name: 'Camila', letter: 'C', color: '#D97706', isImpostor: true, isAlive: true }, // Segunda impostora viva para multi-impostor
+    { id: 3, name: 'Carlos', letter: 'C', color: '#059669', isImpostor: true, hint: 'delfín', isAlive: screenParam !== 'IMPOSTOR_ELIMINATED_CONTINUES' },
+    { id: 4, name: 'Camila', letter: 'C', color: '#D97706', isImpostor: true, hint: 'motor', isAlive: true }, // Segunda impostora viva para multi-impostor
     { id: 5, name: 'Andrés', letter: 'A', color: '#7C3AED', isImpostor: false, isAlive: true },
   ];
 
@@ -229,18 +229,34 @@ export function GameProvider({ children }) {
     const wordData = getRandomGameWord(mainCategory, activeSubtopics, dynamicWordsData);
     setSecretInfo(wordData);
 
+    // Extraer lista de pistas individuales (si vienen como "delfín, motor, llave" o array)
+    const availableHints = (wordData.hints && wordData.hints.length > 0)
+      ? [...wordData.hints]
+      : (wordData.hint ? wordData.hint.split(/[,;]/).map(s => s.trim()).filter(Boolean) : ['Sin pista disponible']);
+
     // Asignar impostores de forma aleatoria
     const shuffledIndices = [...Array(playerNames.length).keys()].sort(() => Math.random() - 0.5);
     const impostorIndices = new Set(shuffledIndices.slice(0, impostorCount));
 
-    const playersWithRoles = playerNames.map((name, idx) => ({
-      id: idx + 1,
-      name,
-      letter: name.charAt(0).toUpperCase(),
-      color: AVATAR_COLORS[idx % AVATAR_COLORS.length],
-      isImpostor: impostorIndices.has(idx),
-      isAlive: true
-    }));
+    // Asignar a cada impostor una pista individual única de la lista
+    let impostorCounter = 0;
+    const playersWithRoles = playerNames.map((name, idx) => {
+      const isImp = impostorIndices.has(idx);
+      let assignedHint = null;
+      if (isImp) {
+        assignedHint = availableHints[impostorCounter % availableHints.length];
+        impostorCounter++;
+      }
+      return {
+        id: idx + 1,
+        name,
+        letter: name.charAt(0).toUpperCase(),
+        color: AVATAR_COLORS[idx % AVATAR_COLORS.length],
+        isImpostor: isImp,
+        hint: assignedHint,
+        isAlive: true
+      };
+    });
 
     setAssignedPlayers(playersWithRoles);
     setCurrentTurnIndex(0);

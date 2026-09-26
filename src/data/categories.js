@@ -142,9 +142,13 @@ export function getRandomGameWord(mainCategory, activeSubtopicIds = ['videojuego
   if (mainCategory === 'ufps') {
     const list = currentUfpsWords;
     const selected = list[Math.floor(Math.random() * list.length)];
+    const parsedHints = selected.hints || (selected.hint ? selected.hint.split(/[,;]/).map(s => s.trim()).filter(Boolean) : []);
+    const hints = parsedHints.length > 0 ? parsedHints : [selected.hint || 'Sin pista disponible'];
+
     return {
       word: selected.word.toUpperCase(),
-      hint: selected.hint,
+      hint: hints[0],
+      hints: hints,
       categoryName: `UFPS › ${selected.group || 'Ingeniería de Sistemas'}`,
       categoryBadge: 'NIVEL 1',
       isUfps: true
@@ -165,9 +169,13 @@ export function getRandomGameWord(mainCategory, activeSubtopicIds = ['videojuego
   }
 
   const chosen = pool[Math.floor(Math.random() * pool.length)];
+  const parsedHints = chosen.hints || (chosen.hint ? chosen.hint.split(/[,;]/).map(s => s.trim()).filter(Boolean) : []);
+  const hints = parsedHints.length > 0 ? parsedHints : [chosen.hint || 'Sin pista disponible'];
+
   return {
     word: chosen.word.toUpperCase(),
-    hint: chosen.hint,
+    hint: hints[0],
+    hints: hints,
     categoryName: chosen.categoryName || `General › ${chosen.subtopic || 'Varios'}`,
     categoryBadge: 'NIVEL 1',
     isUfps: false

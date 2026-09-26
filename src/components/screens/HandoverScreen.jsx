@@ -163,7 +163,7 @@ export default function HandoverScreen() {
                         <span className="camo-q">?</span>
                         <span className="camo-title">PISTA DE CAMUFLAJE</span>
                       </div>
-                      <h2 className="camo-hint-text">{secretInfo.hint}</h2>
+                      <h2 className="camo-hint-text">{currentPlayer.hint || secretInfo.hint}</h2>
                     </div>
                   ) : (
                     <div className="impostor-blind-box">

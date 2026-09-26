@@ -144,7 +144,7 @@ export default function RoleRevealScreen() {
                     <span className="question-circle">?</span>
                     <span className="camouflage-title">PISTA DE CAMUFLAJE</span>
                   </div>
-                  <h2 className="camouflage-text">{secretInfo.hint}</h2>
+                  <h2 className="camouflage-text">{currentPlayer?.hint || secretInfo.hint}</h2>
                 </div>
               </div>
             </div>

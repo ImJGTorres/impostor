@@ -26,11 +26,18 @@ function normalizeRow(row) {
 
   if (!palabra) return null;
 
+  // Extraer pistas individuales si vienen separadas por comas o punto y coma (ej. "delfín, motor, llave")
+  const rawHints = pista
+    ? pista.split(/[,;]/).map(s => s.trim()).filter(Boolean)
+    : [];
+  const hints = rawHints.length > 0 ? rawHints : [pista || 'Sin pista disponible'];
+
   return {
     section: seccion.includes('sistemas') || seccion.includes('ufps') ? 'ufps' : 'general',
     subtopic: subcategoria || (seccion.includes('sistemas') ? 'General Sistemas' : 'General'),
     word: palabra,
-    hint: pista || 'Sin pista disponible'
+    hint: hints[0] || 'Sin pista disponible',
+    hints: hints
   };
 }
 
@@ -48,6 +55,7 @@ export function buildCategoryTree(rawItems) {
       ufpsWords.push({
         word: item.word,
         hint: item.hint,
+        hints: item.hints || [item.hint],
         group: item.subtopic
       });
     } else {
@@ -62,6 +70,7 @@ export function buildCategoryTree(rawItems) {
       generalSubtopicsMap.get(subId).words.push({
         word: item.word,
         hint: item.hint,
+        hints: item.hints || [item.hint],
         categoryName: `General › ${item.subtopic}`
       });
     }

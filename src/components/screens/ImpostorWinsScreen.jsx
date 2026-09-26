@@ -71,10 +71,16 @@ export default function ImpostorWinsScreen() {
         {/* Card: Pista Maestra de Camuflaje */}
         <div className="neo-card master-hint-card">
           <span className="master-hint-label">
-            {withClues ? 'PISTA MAESTRA DE CAMUFLAJE' : 'VICTORIA EN MODO A CIEGAS'}
+            {withClues
+              ? (impostors.length > 1 ? 'PISTAS DE CAMUFLAJE DE LOS INFILTRADOS' : 'PISTA MAESTRA DE CAMUFLAJE')
+              : 'VICTORIA EN MODO A CIEGAS'}
           </span>
           <p className="master-hint-quote">
-            {withClues ? `“${secretInfo.hint}”` : '“Sin pistas ni ayuda: Victoria perfecta a ciegas”'}
+            {withClues ? (
+              impostors.length > 1
+                ? impostors.map(imp => `${imp.name}: “${imp.hint || secretInfo.hint}”`).join('  •  ')
+                : `“${impostors[0]?.hint || secretInfo.hint}”`
+            ) : '“Sin pistas ni ayuda: Victoria perfecta a ciegas”'}
           </p>
           <div className="master-hint-footer">
             <span>

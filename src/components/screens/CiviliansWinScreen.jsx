@@ -69,7 +69,7 @@ export default function CiviliansWinScreen() {
             <span className="hint-emoji">{withClues ? '🗣️' : '🕶️'}</span>
           </div>
           {withClues ? (
-            <p className="hint-quote">“{secretInfo.hint}”</p>
+            <p className="hint-quote">“{lastEliminated?.hint || secretInfo.hint}”</p>
           ) : (
             <p className="hint-quote">“El impostor jugó a ciegas sin ninguna pista de apoyo”</p>
           )}

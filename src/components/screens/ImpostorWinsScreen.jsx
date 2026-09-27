@@ -14,10 +14,11 @@ export default function ImpostorWinsScreen() {
     withClues
   } = useGame();
 
-  const allImpostors = assignedPlayers.filter(p => p.isImpostor);
+  const playersList = assignedPlayers || [];
+  const allImpostors = playersList.filter(p => p && p.isImpostor);
   const aliveImpostors = allImpostors.filter(p => p.isAlive);
   const winnerNames = aliveImpostors.map(p => p.name).join(' y ') || 'Infiltrado';
-  const aliveCivilians = assignedPlayers.filter(p => !p.isImpostor && p.isAlive).length;
+  const aliveCivilians = playersList.filter(p => !p.isImpostor && p.isAlive).length;
 
   return (
     <div className="screen-container">
@@ -138,11 +139,11 @@ export default function ImpostorWinsScreen() {
         <div className="neo-card secret-unrevealed-card">
           <div className="secret-unrevealed-header">
             <span className="unrevealed-label">PALABRA OCULTA JAMÁS REVELADA</span>
-            <span className="unrevealed-category">Categoría: {secretInfo.categoryName}</span>
+            <span className="unrevealed-category">Categoría: {secretInfo?.categoryName || 'General'}</span>
           </div>
           <div className="unrevealed-word-row">
             <Lock size={18} color="#C24128" />
-            <span className="unrevealed-word">{secretInfo.word}</span>
+            <span className="unrevealed-word">{secretInfo?.word || 'Palabra Secreta'}</span>
           </div>
         </div>
 
@@ -180,7 +181,7 @@ export default function ImpostorWinsScreen() {
           </div>
 
           <div className="chronology-timeline">
-            {roundHistory.map((item, idx) => (
+            {(roundHistory || []).map((item, idx) => (
               <div key={idx} className="timeline-item">
                 <div className="timeline-num">{item.round}</div>
                 <div className="timeline-details">
@@ -197,7 +198,7 @@ export default function ImpostorWinsScreen() {
                 <Flag size={16} color="#FFFFFF" />
                 <div className="final-banner-texts">
                   <span className="final-title">Jaque Mate Infiltrado</span>
-                  <span className="final-sub">{aliveCivilians} Civiles vs {aliveImpostors} Impostores</span>
+                  <span className="final-sub">{aliveCivilians} Civiles vs {aliveImpostors.length} Impostores</span>
                 </div>
               </div>
               <span className="final-badge">FIN</span>

@@ -234,8 +234,12 @@ export function GameProvider({ children }) {
       ? [...wordData.hints]
       : (wordData.hint ? wordData.hint.split(/[,;]/).map(s => s.trim()).filter(Boolean) : ['Sin pista disponible']);
 
-    // Asignar impostores de forma aleatoria
-    const shuffledIndices = [...Array(playerNames.length).keys()].sort(() => Math.random() - 0.5);
+    // Asignar impostores de forma aleatoria (Fisher–Yates)
+    const shuffledIndices = [...Array(playerNames.length).keys()];
+    for (let i = shuffledIndices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledIndices[i], shuffledIndices[j]] = [shuffledIndices[j], shuffledIndices[i]];
+    }
     const impostorIndices = new Set(shuffledIndices.slice(0, impostorCount));
 
     // Asignar a cada impostor una pista individual única de la lista

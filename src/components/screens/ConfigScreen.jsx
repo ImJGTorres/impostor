@@ -13,8 +13,7 @@ import {
   Clapperboard,
   Trophy,
   ArrowRight,
-  Info,
-  Clock
+  Info
 } from 'lucide-react';
 import Header from '../common/Header';
 import { useGame } from '../../context/GameContext';
@@ -29,8 +28,6 @@ export default function ConfigScreen() {
     setImpostorCount,
     withClues,
     setWithClues,
-    discussionTime,
-    setDiscussionTime,
     mainCategory,
     setMainCategory,
     activeSubtopics,
@@ -42,28 +39,6 @@ export default function ConfigScreen() {
 
   const [inputName, setInputName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [customTimeInput, setCustomTimeInput] = useState(String(discussionTime));
-
-  const handleCustomTimeChange = (e) => {
-    const val = e.target.value;
-    setCustomTimeInput(val);
-    const parsed = parseInt(val, 10);
-    if (!isNaN(parsed) && parsed > 0) {
-      setDiscussionTime(Math.min(999, parsed));
-    }
-  };
-
-  const handleCustomTimeBlur = () => {
-    const parsed = parseInt(customTimeInput, 10);
-    if (isNaN(parsed) || parsed < 5) {
-      setDiscussionTime(30);
-      setCustomTimeInput('30');
-    } else {
-      const clamped = Math.min(999, Math.max(5, parsed));
-      setDiscussionTime(clamped);
-      setCustomTimeInput(String(clamped));
-    }
-  };
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
@@ -73,7 +48,7 @@ export default function ConfigScreen() {
       setInputName('');
       setErrorMsg('');
     } else {
-      setErrorMsg('Nombre duplicado o límite alcanzado (máx. 12)');
+      setErrorMsg('Ese nombre ya está en la lista');
     }
   };
 
@@ -182,7 +157,7 @@ export default function ConfigScreen() {
             <span>
               {playerNames.length < 3
                 ? `Mínimo 3 jugadores para iniciar (faltan ${3 - playerNames.length})`
-                : '¡Mesa completa! Puedes añadir hasta 12 jugadores'}
+                : '¡Mesa lista! Puedes seguir añadiendo más participantes'}
             </span>
           </div>
         </div>
@@ -283,56 +258,6 @@ export default function ConfigScreen() {
                 ? 'El infiltrado tendrá una frase de apoyo para disimular entre los civiles'
                 : 'Modo hardcore: el impostor debe adivinar de qué hablan solo escuchando'}
             </span>
-          </div>
-        </div>
-
-        {/* Card 4: Tiempo de discusión (Ronda de pistas) */}
-        <div className="neo-card config-card">
-          <div className="card-top-row">
-            <div className="section-title-group">
-              <Clock size={18} className="section-icon" />
-              <h2 className="section-title">Tiempo de debate</h2>
-            </div>
-            <span className="badge-pill badge-red">{discussionTime}s por ronda</span>
-          </div>
-
-          <div className="time-chips-wrap">
-            {[30, 45, 60, 90, 120, 180].map((timeSecs) => (
-              <button
-                key={timeSecs}
-                type="button"
-                className={`time-chip ${discussionTime === timeSecs ? 'active' : ''}`}
-                onClick={() => {
-                  setDiscussionTime(timeSecs);
-                  setCustomTimeInput(String(timeSecs));
-                }}
-              >
-                {timeSecs < 60 ? `${timeSecs}s` : `${timeSecs / 60}m`}
-              </button>
-            ))}
-          </div>
-
-          {/* Opción de escribir el tiempo deseado manualmente */}
-          <div className="custom-time-row">
-            <span className="custom-time-label">O escribe la cantidad exacta:</span>
-            <div className="custom-time-input-group">
-              <input
-                type="number"
-                min="5"
-                max="999"
-                className="custom-time-input"
-                placeholder="Ej. 75"
-                value={customTimeInput}
-                onChange={handleCustomTimeChange}
-                onBlur={handleCustomTimeBlur}
-              />
-              <span className="custom-time-unit">seg</span>
-            </div>
-          </div>
-
-          <div className="card-info-footer">
-            <span className="red-dot"></span>
-            <span>Sonará una alarma acústica en el celular cuando el tiempo finalice</span>
           </div>
         </div>
 

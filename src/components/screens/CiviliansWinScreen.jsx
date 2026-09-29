@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react';
-import { RotateCcw, Home, Key, Info } from 'lucide-react';
+import { RotateCcw, Home, Key } from 'lucide-react';
 import Header from '../common/Header';
 import { useGame } from '../../context/GameContext';
 import confetti from 'canvas-confetti';
 
 export default function CiviliansWinScreen() {
   const {
+    assignedPlayers,
     lastEliminated,
     secretInfo,
     startNewGame,
-    returnToHome,
-    withClues
+    returnToHome
   } = useGame();
 
   useEffect(() => {
@@ -20,6 +20,9 @@ export default function CiviliansWinScreen() {
       origin: { y: 0.55 }
     });
   }, []);
+
+  const allImpostors = (assignedPlayers || []).filter(p => p && p.isImpostor);
+  const impostorsList = allImpostors.length > 0 ? allImpostors : (lastEliminated ? [lastEliminated] : []);
 
   return (
     <div className="screen-container">
@@ -36,17 +39,32 @@ export default function CiviliansWinScreen() {
           <h1 className="win-title">¡Los Civiles Ganan!</h1>
         </div>
 
-        {/* Card: Identidad Confidencial */}
+        {/* Card: Identidades de los Infiltrados */}
         <div className="neo-card dossier-card">
-          <div className="impostor-unmasked-row">
-            <div className="impostor-avatar-frame">
-              <img src="/impostor-logo.png" alt="Impostor" className="impostor-img" />
-            </div>
-            <div className="impostor-unmasked-info">
-              <span className="confidential-label">IDENTIDAD CONFIDENCIAL</span>
-              <h2 className="impostor-name">{lastEliminated?.name || 'Infiltrado'}</h2>
-              <span className="badge-pill badge-red era-impostor-pill">ERA EL IMPOSTOR</span>
-            </div>
+          <div className="card-mini-header" style={{ marginBottom: '12px' }}>
+            <span className="mini-label">
+              {impostorsList.length === 1 ? 'INFILTRADO DESENMASCARADO' : 'INFILTRADOS DESENMASCARADOS'}
+            </span>
+            <span className="badge-pill badge-red era-impostor-pill">
+              {impostorsList.length} {impostorsList.length === 1 ? 'IMPOSTOR' : 'IMPOSTORES'}
+            </span>
+          </div>
+
+          <div className="impostors-unmasked-list">
+            {impostorsList.map((imp) => (
+              <div key={imp.id || imp.name} className="impostor-unmasked-row">
+                <div
+                  className="roster-avatar"
+                  style={{ backgroundColor: imp.color || '#C24128' }}
+                >
+                  {imp.letter || imp.name?.charAt(0)?.toUpperCase() || '?'}
+                </div>
+                <div className="impostor-unmasked-info">
+                  <span className="impostor-name">{imp.name}</span>
+                  <span className="badge-pill badge-red era-impostor-pill">ERA EL IMPOSTOR</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -56,31 +74,8 @@ export default function CiviliansWinScreen() {
             <span className="mini-label">PALABRA SECRETA</span>
             <Key size={16} className="key-icon" />
           </div>
-          <h2 className="secret-word-title">{secretInfo.word}</h2>
-          <span className="category-subtext">Categoría: {secretInfo.categoryName}</span>
-        </div>
-
-        {/* Card: Pista del impostor */}
-        <div className="neo-card hint-reveal-card">
-          <div className="card-mini-header">
-            <span className="mini-label">
-              {withClues ? 'PISTA DE CAMUFLAJE ASIGNADA' : 'MODO DE JUEGO: SIN PISTA'}
-            </span>
-            <span className="hint-emoji">{withClues ? '🗣️' : '🕶️'}</span>
-          </div>
-          {withClues ? (
-            <p className="hint-quote">“{lastEliminated?.hint || secretInfo.hint}”</p>
-          ) : (
-            <p className="hint-quote">“El impostor jugó a ciegas sin ninguna pista de apoyo”</p>
-          )}
-          <div className="hint-analysis-row">
-            <Info size={14} className="info-icon" />
-            <span className="hint-analysis-text">
-              {withClues
-                ? 'Los civiles detectaron la sospecha y lograron desenmascarar al agente infiltrado a tiempo.'
-                : 'A pesar del desafío a ciegas, los civiles detectaron inconsistencias y descubrieron al infiltrado.'}
-            </span>
-          </div>
+          <h2 className="secret-word-title">{secretInfo?.word || 'Palabra Secreta'}</h2>
+          <span className="category-subtext">Categoría: {secretInfo?.categoryName || 'General'}</span>
         </div>
 
         {/* Botones de acción */}
@@ -134,28 +129,48 @@ export default function CiviliansWinScreen() {
           border: 1.5px solid var(--border-light);
         }
 
+        .card-mini-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .mini-label {
+          font-size: 0.7rem;
+          font-weight: 800;
+          color: var(--text-muted);
+          letter-spacing: 0.06em;
+        }
+
+        .impostors-unmasked-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
         .impostor-unmasked-row {
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 14px;
+          padding: 10px 12px;
+          background-color: #FFF8F6;
+          border: 1.5px solid #FCA5A5;
+          border-radius: var(--radius-md);
         }
 
-        .impostor-avatar-frame {
-          width: 56px;
-          height: 56px;
-          background-color: #1C1917;
-          border-radius: var(--radius-md);
+        .roster-avatar {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          border: 2px solid var(--border-dark);
+          color: #FFFFFF;
+          font-weight: 900;
+          font-size: 1.1rem;
           display: flex;
           align-items: center;
           justify-content: center;
-          overflow: hidden;
+          box-shadow: 2px 2px 0px var(--border-dark);
           flex-shrink: 0;
-        }
-
-        .impostor-img {
-          width: 48px;
-          height: 48px;
-          object-fit: contain;
         }
 
         .impostor-unmasked-info {
@@ -164,15 +179,8 @@ export default function CiviliansWinScreen() {
           gap: 2px;
         }
 
-        .confidential-label {
-          font-size: 0.68rem;
-          font-weight: 800;
-          color: var(--text-muted);
-          letter-spacing: 0.06em;
-        }
-
         .impostor-name {
-          font-size: 1.4rem;
+          font-size: 1.25rem;
           font-weight: 800;
           color: var(--text-main);
         }
@@ -193,19 +201,6 @@ export default function CiviliansWinScreen() {
           border: 1.5px solid var(--border-light);
         }
 
-        .card-mini-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .mini-label {
-          font-size: 0.7rem;
-          font-weight: 800;
-          color: var(--text-muted);
-          letter-spacing: 0.06em;
-        }
-
         .key-icon {
           color: var(--primary-red);
         }
@@ -221,42 +216,6 @@ export default function CiviliansWinScreen() {
           font-size: 0.8rem;
           color: var(--text-muted);
           font-weight: 500;
-        }
-
-        .hint-reveal-card {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          padding: 16px 18px;
-          background-color: var(--bg-card-subtle);
-          border: 1.5px solid var(--border-light);
-        }
-
-        .hint-quote {
-          font-size: 1.1rem;
-          font-weight: 700;
-          color: var(--text-main);
-          font-style: italic;
-          line-height: 1.35;
-        }
-
-        .hint-analysis-row {
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
-          margin-top: 4px;
-        }
-
-        .info-icon {
-          color: var(--text-muted);
-          flex-shrink: 0;
-          margin-top: 2px;
-        }
-
-        .hint-analysis-text {
-          font-size: 0.78rem;
-          color: var(--text-muted);
-          line-height: 1.35;
         }
 
         .win-actions {

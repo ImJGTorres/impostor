@@ -70,6 +70,7 @@ export function GameProvider({ children }) {
   const [discussionTime, setDiscussionTime] = useState(90); // en segundos
   const [mainCategory, setMainCategory] = useState('general'); // 'ufps' | 'general'
   const [activeSubtopics, setActiveSubtopics] = useState(['videojuegos', 'comida', 'peliculas']);
+  const [previousImpostorNames, setPreviousImpostorNames] = useState([]);
 
   // Estado activo de la partida
   const [assignedPlayers, setAssignedPlayers] = useState(defaultMockPlayers);
@@ -187,12 +188,11 @@ export function GameProvider({ children }) {
     ? dynamicWordsData.ufpsWords
     : UFPS_CATEGORY.words;
 
-  // Agregar jugador
+  // Agregar jugador (sin límite de cantidad)
   const addPlayer = (name) => {
     const trimmed = name.trim();
     if (!trimmed) return false;
     if (playerNames.some(p => p.toLowerCase() === trimmed.toLowerCase())) return false;
-    if (playerNames.length >= 12) return false;
     setPlayerNames(prev => [...prev, trimmed]);
     return true;
   };

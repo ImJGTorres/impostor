@@ -20,6 +20,14 @@ export default function ImpostorWinsScreen() {
   const winnerNames = aliveImpostors.map(p => p.name).join(' y ') || 'Infiltrado';
   const aliveCivilians = playersList.filter(p => !p.isImpostor && p.isAlive).length;
 
+  const getThemeText = (rawCategory) => {
+    if (!rawCategory) return 'Tema: General';
+    const parts = rawCategory.split(/[›\->]/);
+    const sub = parts[parts.length - 1].trim();
+    const formatted = sub ? sub.charAt(0).toUpperCase() + sub.slice(1) : rawCategory;
+    return `Tema: ${formatted}`;
+  };
+
   return (
     <div className="screen-container">
       <Header
@@ -134,7 +142,7 @@ export default function ImpostorWinsScreen() {
         <div className="neo-card secret-unrevealed-card">
           <div className="secret-unrevealed-header">
             <span className="unrevealed-label">PALABRA OCULTA JAMÁS REVELADA</span>
-            <span className="unrevealed-category">Categoría: {secretInfo?.categoryName || 'General'}</span>
+            <span className="unrevealed-category">{getThemeText(secretInfo?.categoryName)}</span>
           </div>
           <div className="unrevealed-word-row">
             <Lock size={18} color="#C24128" />

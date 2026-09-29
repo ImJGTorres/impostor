@@ -413,6 +413,7 @@ export default function HandoverScreen() {
 
         /* TARJETA REVELADA */
         .reveal-active-card {
+          position: relative;
           border: 2.5px solid var(--border-dark);
           padding: 20px;
           box-shadow: var(--shadow-neo-lg);
@@ -426,6 +427,7 @@ export default function HandoverScreen() {
         }
 
         .civil-card {
+          position: relative;
           background-color: #FFFFFF;
           border-color: #059669;
         }
@@ -435,7 +437,17 @@ export default function HandoverScreen() {
           border-color: var(--primary-red);
         }
 
-        .revealed-civil-inner, .revealed-impostor-inner {
+        .revealed-civil-inner {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          align-items: center;
+          text-align: center;
+        }
+
+        .revealed-impostor-inner {
+          width: 100%;
           display: flex;
           flex-direction: column;
           gap: 12px;
@@ -444,7 +456,9 @@ export default function HandoverScreen() {
         }
 
         .dossier-top {
-          width: 100%;
+          position: absolute;
+          top: 14px;
+          left: 16px;
           display: flex;
           align-items: center;
           justify-content: flex-start;
@@ -452,9 +466,10 @@ export default function HandoverScreen() {
         }
 
         .dossier-category {
-          font-size: 0.8rem;
+          font-size: 0.78rem;
           font-weight: 700;
           color: var(--text-muted);
+          letter-spacing: 0.02em;
         }
 
         .civil-shield-badge {

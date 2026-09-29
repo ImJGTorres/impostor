@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { MessageSquare, Users, Clock, ArrowRight, Lightbulb, Play, Pause, RotateCcw, Bell } from 'lucide-react';
+import React from 'react';
+import { MessageSquare, Users, ArrowRight, Lightbulb } from 'lucide-react';
 import Header from '../common/Header';
 import { useGame } from '../../context/GameContext';
 
@@ -8,80 +8,10 @@ export default function CluesPhaseScreen() {
     assignedPlayers,
     firstCluePlayer,
     currentRound,
-    discussionTime,
     setCurrentScreen
   } = useGame();
 
   const alivePlayers = assignedPlayers.filter(p => p.isAlive);
-
-  // Temporizador para debate/pistas (inicia corriendo automáticamente)
-  const initialTime = discussionTime || 90;
-  const [secondsLeft, setSecondsLeft] = useState(initialTime);
-  const [isTimerRunning, setIsTimerRunning] = useState(true);
-  const [timeIsUp, setTimeIsUp] = useState(false);
-
-  // Alarma acústica y vibración cuando el tiempo finaliza
-  const playAlarmSound = () => {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) {
-        const ctx = new AudioCtx();
-        const now = ctx.currentTime;
-        [0, 0.22, 0.44, 0.66].forEach((delay) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(880, now + delay);
-          gain.gain.setValueAtTime(0.25, now + delay);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.16);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now + delay);
-          osc.stop(now + delay + 0.18);
-        });
-      }
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate([300, 100, 300, 100, 400]);
-      }
-    } catch (err) {
-      console.warn('Alarma acústica no ejecutada:', err);
-    }
-  };
-
-  useEffect(() => {
-    let interval = null;
-    if (isTimerRunning && secondsLeft > 0) {
-      interval = setInterval(() => {
-        setSecondsLeft(prev => {
-          if (prev <= 1) {
-            setTimeIsUp(true);
-            playAlarmSound();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else if (secondsLeft === 0) {
-      setIsTimerRunning(false);
-    }
-    return () => clearInterval(interval);
-  }, [isTimerRunning, secondsLeft]);
-
-  const toggleTimer = () => {
-    setIsTimerRunning(prev => !prev);
-  };
-
-  const resetTimer = () => {
-    setIsTimerRunning(true);
-    setSecondsLeft(initialTime);
-    setTimeIsUp(false);
-  };
-
-  const formatTime = (secs) => {
-    const mins = Math.floor(secs / 60);
-    const rem = secs % 60;
-    return `${mins}:${rem < 10 ? '0' : ''}${rem}`;
-  };
 
   return (
     <div className="screen-container">
@@ -139,47 +69,6 @@ export default function CluesPhaseScreen() {
             ))}
           </div>
         </div>
-
-        {/* Temporizador de debate opcional */}
-        <div className="neo-card timer-card">
-          <div className="timer-header">
-            <Clock size={16} className="clock-icon" />
-            <span className="timer-title">TIEMPO DE DISCUSIÓN</span>
-          </div>
-          <div className="timer-display-row">
-            <span className={`timer-number ${secondsLeft === 0 ? 'time-zero' : ''}`}>
-              {formatTime(secondsLeft)}
-            </span>
-            <div className="timer-controls">
-              <button
-                type="button"
-                className="timer-btn"
-                onClick={toggleTimer}
-                aria-label={isTimerRunning ? 'Pausar' : 'Iniciar'}
-              >
-                {isTimerRunning ? <Pause size={16} /> : <Play size={16} />}
-              </button>
-              <button
-                type="button"
-                className="timer-btn"
-                onClick={resetTimer}
-                aria-label="Reiniciar tiempo"
-              >
-                <RotateCcw size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {secondsLeft === 0 && (
-          <div className="time-up-alert">
-            <Bell size={22} className="bell-alarm-icon" />
-            <div className="time-up-text">
-              <strong className="time-up-strong">¡TIEMPO TERMINADO! ⏰</strong>
-              <p className="time-up-sub">Es momento de abrir el debate final o proceder a votar.</p>
-            </div>
-          </div>
-        )}
 
         {/* Consejo */}
         <div className="tactical-box">
@@ -350,112 +239,7 @@ export default function CluesPhaseScreen() {
           border-radius: 8px;
         }
 
-        .timer-card {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 14px 18px;
-        }
 
-        .timer-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .clock-icon {
-          color: var(--primary-red);
-        }
-
-        .timer-title {
-          font-size: 0.76rem;
-          font-weight: 800;
-          color: var(--text-muted);
-          letter-spacing: 0.05em;
-        }
-
-        .timer-display-row {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .timer-number {
-          font-size: 1.4rem;
-          font-weight: 800;
-          color: var(--text-main);
-          font-variant-numeric: tabular-nums;
-          transition: color 0.2s ease;
-        }
-
-        .timer-number.time-zero {
-          color: var(--primary-red);
-          animation: pulseRed 1s infinite alternate;
-        }
-
-        @keyframes pulseRed {
-          from { opacity: 0.6; }
-          to { opacity: 1; }
-        }
-
-        .time-up-alert {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          background-color: #FFF2F0;
-          border: 2px solid var(--primary-red);
-          border-radius: var(--radius-md);
-          padding: 14px 16px;
-          box-shadow: 0 4px 14px rgba(194, 65, 40, 0.15);
-          animation: popIn 0.25s ease-out;
-        }
-
-        .bell-alarm-icon {
-          color: var(--primary-red);
-          flex-shrink: 0;
-          animation: ring 0.5s infinite alternate;
-        }
-
-        @keyframes ring {
-          from { transform: rotate(-10deg); }
-          to { transform: rotate(10deg); }
-        }
-
-        .time-up-text {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-
-        .time-up-strong {
-          font-size: 0.88rem;
-          font-weight: 800;
-          color: var(--primary-red);
-          letter-spacing: 0.02em;
-        }
-
-        .time-up-sub {
-          font-size: 0.78rem;
-          color: var(--text-main);
-          line-height: 1.35;
-        }
-
-        .timer-controls {
-          display: flex;
-          gap: 6px;
-        }
-
-        .timer-btn {
-          width: 32px;
-          height: 32px;
-          background-color: var(--bg-card-subtle);
-          border: 1.5px solid var(--border-dark);
-          border-radius: 6px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-        }
 
         .tactical-box {
           background-color: #FFFFFF;

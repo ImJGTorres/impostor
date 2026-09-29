@@ -24,6 +24,14 @@ export default function CiviliansWinScreen() {
   const allImpostors = (assignedPlayers || []).filter(p => p && p.isImpostor);
   const impostorsList = allImpostors.length > 0 ? allImpostors : (lastEliminated ? [lastEliminated] : []);
 
+  const getThemeText = (rawCategory) => {
+    if (!rawCategory) return 'Tema: General';
+    const parts = rawCategory.split(/[›\->]/);
+    const sub = parts[parts.length - 1].trim();
+    const formatted = sub ? sub.charAt(0).toUpperCase() + sub.slice(1) : rawCategory;
+    return `Tema: ${formatted}`;
+  };
+
   return (
     <div className="screen-container">
       <Header
@@ -75,7 +83,7 @@ export default function CiviliansWinScreen() {
             <Key size={16} className="key-icon" />
           </div>
           <h2 className="secret-word-title">{secretInfo?.word || 'Palabra Secreta'}</h2>
-          <span className="category-subtext">Categoría: {secretInfo?.categoryName || 'General'}</span>
+          <span className="category-subtext">{getThemeText(secretInfo?.categoryName)}</span>
         </div>
 
         {/* Botones de acción */}

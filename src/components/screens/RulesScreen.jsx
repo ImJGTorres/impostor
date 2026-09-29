@@ -78,7 +78,7 @@ export default function RulesScreen() {
             <span>ENTENDIDO, ¡A JUGAR!</span>
             <ArrowRight size={18} />
           </button>
-          <span className="rules-caption">Partida local • 3 a 12 participantes</span>
+          <span className="rules-caption">Partida local • 3 o más participantes (sin límite)</span>
         </div>
       </main>
 

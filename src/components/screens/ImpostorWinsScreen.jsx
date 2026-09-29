@@ -1,5 +1,5 @@
 import React from 'react';
-import { RotateCcw, Home, Lock, TrendingUp, Flag, UserX, Trophy } from 'lucide-react';
+import { RotateCcw, Home, Lock, UserX, Trophy } from 'lucide-react';
 import Header from '../common/Header';
 import { useGame } from '../../context/GameContext';
 
@@ -123,11 +123,6 @@ export default function ImpostorWinsScreen() {
                         </span>
                       )}
                     </div>
-                    {withClues && imp.hint && (
-                      <span className="roster-hint">
-                        Pista: <strong>“{imp.hint}”</strong>
-                      </span>
-                    )}
                   </div>
                 </div>
               );
@@ -144,65 +139,6 @@ export default function ImpostorWinsScreen() {
           <div className="unrevealed-word-row">
             <Lock size={18} color="#C24128" />
             <span className="unrevealed-word">{secretInfo?.word || 'Palabra Secreta'}</span>
-          </div>
-        </div>
-
-        {/* Card: Pista Maestra de Camuflaje */}
-        <div className="neo-card master-hint-card">
-          <span className="master-hint-label">
-            {withClues
-              ? (allImpostors.length > 1 ? 'PISTAS DE CAMUFLAJE DE LOS INFILTRADOS' : 'PISTA MAESTRA DE CAMUFLAJE')
-              : 'VICTORIA EN MODO A CIEGAS'}
-          </span>
-          <p className="master-hint-quote">
-            {withClues ? (
-              allImpostors.length > 1
-                ? allImpostors.map(imp => `${imp.name}: “${imp.hint || secretInfo.hint}”`).join('  •  ')
-                : `“${allImpostors[0]?.hint || secretInfo.hint}”`
-            ) : '“Sin pistas ni ayuda: Victoria perfecta a ciegas”'}
-          </p>
-          <div className="master-hint-footer">
-            <span>
-              {withClues
-                ? 'Persuadió con éxito a los civiles en la mesa'
-                : 'Logró camuflarse magistralmente sin conocer la palabra ni tener pistas'}
-            </span>
-          </div>
-        </div>
-
-        {/* Card: Cronología de la mesa (Figma 5:122) */}
-        <div className="neo-card chronology-card">
-          <div className="chronology-header">
-            <div className="chronology-title-wrap">
-              <TrendingUp size={16} className="trend-icon" />
-              <span className="chronology-title">CRONOLOGÍA DE LA MESA</span>
-            </div>
-            <span className="badge-pill badge-neutral">{currentRound} Rondas</span>
-          </div>
-
-          <div className="chronology-timeline">
-            {(roundHistory || []).map((item, idx) => (
-              <div key={idx} className="timeline-item">
-                <div className="timeline-num">{item.round}</div>
-                <div className="timeline-details">
-                  <span className="timeline-player-name">{item.player} eliminada</span>
-                  <span className="timeline-player-role">{item.roleDescription}</span>
-                </div>
-                <UserX size={16} className="timeline-icon" />
-              </div>
-            ))}
-
-            {/* Fila final: Jaque Mate Infiltrado */}
-            <div className="timeline-final-banner">
-              <div className="final-banner-left">
-                <Flag size={16} color="#FFFFFF" />
-                <div className="final-banner-texts">
-                  <span className="final-title">Jaque Mate Infiltrado</span>
-                  <span className="final-sub">{aliveCivilians} Civiles vs {aliveImpostors.length} Impostores</span>
-                </div>
-              </div>
-              <span className="final-badge">FIN</span>
-            </div>
           </div>
         </div>
 
@@ -503,155 +439,7 @@ export default function ImpostorWinsScreen() {
           color: var(--text-main);
         }
 
-        .master-hint-card {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          padding: 14px 16px;
-          background-color: var(--bg-card-subtle);
-          border: 1.5px solid var(--border-light);
-        }
 
-        .master-hint-label {
-          font-size: 0.68rem;
-          font-weight: 800;
-          color: var(--text-muted);
-          letter-spacing: 0.05em;
-        }
-
-        .master-hint-quote {
-          font-size: 1.05rem;
-          font-weight: 700;
-          font-style: italic;
-          color: var(--text-main);
-        }
-
-        .master-hint-footer {
-          font-size: 0.74rem;
-          color: var(--text-muted);
-          text-align: right;
-        }
-
-        .chronology-card {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          padding: 16px;
-          background-color: var(--bg-card-subtle);
-        }
-
-        .chronology-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .chronology-title-wrap {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .trend-icon {
-          color: var(--primary-red);
-        }
-
-        .chronology-title {
-          font-size: 0.76rem;
-          font-weight: 800;
-          letter-spacing: 0.05em;
-          color: var(--text-main);
-        }
-
-        .chronology-timeline {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .timeline-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          background-color: #FFFFFF;
-          border: 1px solid var(--border-light);
-          border-radius: var(--radius-md);
-          padding: 10px 14px;
-        }
-
-        .timeline-num {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background-color: #EFECE6;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 0.75rem;
-          font-weight: 800;
-          color: var(--text-main);
-        }
-
-        .timeline-details {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-          margin-left: 12px;
-        }
-
-        .timeline-player-name {
-          font-size: 0.88rem;
-          font-weight: 700;
-          color: var(--text-main);
-        }
-
-        .timeline-player-role {
-          font-size: 0.72rem;
-          color: var(--primary-red);
-        }
-
-        .timeline-icon {
-          color: var(--primary-red);
-        }
-
-        .timeline-final-banner {
-          background-color: var(--primary-red);
-          color: #FFFFFF;
-          border-radius: var(--radius-md);
-          padding: 12px 14px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .final-banner-left {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .final-banner-texts {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .final-title {
-          font-size: 0.95rem;
-          font-weight: 800;
-        }
-
-        .final-sub {
-          font-size: 0.75rem;
-          opacity: 0.9;
-        }
-
-        .final-badge {
-          background-color: rgba(0, 0, 0, 0.25);
-          font-size: 0.68rem;
-          font-weight: 800;
-          padding: 4px 8px;
-          border-radius: 4px;
-        }
 
         .impostor-win-actions {
           margin-top: auto;

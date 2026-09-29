@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Lock,
   EyeOff,
@@ -31,6 +31,20 @@ export default function HandoverScreen() {
 
   const [isHolding, setIsHolding] = useState(isPreviewReveal);
   const [hasRevealed, setHasRevealed] = useState(isPreviewReveal);
+
+  // Reiniciar estado de revelación para que el siguiente jugador solo vea 'Mantener presionado'
+  useEffect(() => {
+    setIsHolding(isPreviewReveal);
+    setHasRevealed(isPreviewReveal);
+  }, [currentTurnIndex, isPreviewReveal]);
+
+  const getThemeText = (rawCategory) => {
+    if (!rawCategory) return 'Tema: General';
+    const parts = rawCategory.split(/[›\->]/);
+    const sub = parts[parts.length - 1].trim();
+    const formatted = sub ? sub.charAt(0).toUpperCase() + sub.slice(1) : rawCategory;
+    return `Tema: ${formatted}`;
+  };
 
   if (!currentPlayer) return null;
 
@@ -128,8 +142,7 @@ export default function HandoverScreen() {
                 /* VISTA CIVIL */
                 <div className="revealed-civil-inner">
                   <div className="dossier-top">
-                    <span className="dossier-category">{secretInfo.categoryName}</span>
-                    <span className="badge-pill badge-neutral level-pill">NIVEL 1</span>
+                    <span className="dossier-category">{getThemeText(secretInfo?.categoryName)}</span>
                   </div>
 
                   <div className="civil-shield-badge">
@@ -141,8 +154,6 @@ export default function HandoverScreen() {
                     <span className="word-label">PALABRA CLAVE</span>
                     <h2 className="secret-word-main">{secretInfo.word}</h2>
                   </div>
-
-                  <p className="release-hint">⚠️ Suelta el botón para ocultar</p>
                 </div>
               ) : (
                 /* VISTA IMPOSTOR */
@@ -154,7 +165,7 @@ export default function HandoverScreen() {
 
                   <div className="impostor-category-row">
                     <Gamepad2 size={16} />
-                    <span>{secretInfo.categoryName}</span>
+                    <span>{getThemeText(secretInfo?.categoryName)}</span>
                   </div>
 
                   {withClues ? (
@@ -177,8 +188,6 @@ export default function HandoverScreen() {
                       </p>
                     </div>
                   )}
-
-                  <p className="release-hint">⚠️ Suelta el botón para ocultar</p>
                 </div>
               )}
             </div>
@@ -438,18 +447,14 @@ export default function HandoverScreen() {
           width: 100%;
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          justify-content: flex-start;
+          text-align: left;
         }
 
         .dossier-category {
-          font-size: 0.78rem;
+          font-size: 0.8rem;
           font-weight: 700;
           color: var(--text-muted);
-        }
-
-        .level-pill {
-          font-size: 0.65rem;
-          padding: 2px 8px;
         }
 
         .civil-shield-badge {

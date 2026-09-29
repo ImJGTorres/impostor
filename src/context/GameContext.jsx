@@ -70,6 +70,7 @@ export function GameProvider({ children }) {
   const [discussionTime, setDiscussionTime] = useState(90); // en segundos
   const [mainCategory, setMainCategory] = useState('general'); // 'ufps' | 'general'
   const [activeSubtopics, setActiveSubtopics] = useState(['videojuegos', 'comida', 'peliculas']);
+  const [previousImpostorNames, setPreviousImpostorNames] = useState([]);
 
   // Estado activo de la partida
   const [assignedPlayers, setAssignedPlayers] = useState(defaultMockPlayers);
@@ -187,12 +188,11 @@ export function GameProvider({ children }) {
     ? dynamicWordsData.ufpsWords
     : UFPS_CATEGORY.words;
 
-  // Agregar jugador
+  // Agregar jugador (sin límite de cantidad)
   const addPlayer = (name) => {
     const trimmed = name.trim();
     if (!trimmed) return false;
     if (playerNames.some(p => p.toLowerCase() === trimmed.toLowerCase())) return false;
-    if (playerNames.length >= 12) return false;
     setPlayerNames(prev => [...prev, trimmed]);
     return true;
   };
@@ -234,9 +234,35 @@ export function GameProvider({ children }) {
       ? [...wordData.hints]
       : (wordData.hint ? wordData.hint.split(/[,;]/).map(s => s.trim()).filter(Boolean) : ['Sin pista disponible']);
 
-    // Asignar impostores de forma aleatoria
-    const shuffledIndices = [...Array(playerNames.length).keys()].sort(() => Math.random() - 0.5);
-    const impostorIndices = new Set(shuffledIndices.slice(0, impostorCount));
+    // Función barajado Fisher-Yates (uniforme y sin sesgos)
+    const shuffleArray = (arr) => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+
+    // Selección inteligente de impostores evitando repetir exactamente los mismos de la partida anterior
+    const allIndices = [...Array(playerNames.length).keys()];
+    const nonPrevIndices = allIndices.filter(
+      idx => !previousImpostorNames.includes(playerNames[idx])
+    );
+
+    let chosenIndices = [];
+    if (nonPrevIndices.length >= impostorCount) {
+      // Elegir impostores completamente nuevos entre quienes no fueron impostores la ronda anterior
+      chosenIndices = shuffleArray(nonPrevIndices).slice(0, impostorCount);
+    } else {
+      // Usar a los que no fueron impostores y completar con el resto barajado
+      const remainingNeeded = impostorCount - nonPrevIndices.length;
+      const restIndices = shuffleArray(allIndices.filter(idx => !nonPrevIndices.includes(idx)));
+      chosenIndices = [...nonPrevIndices, ...restIndices.slice(0, remainingNeeded)];
+    }
+
+    const impostorIndices = new Set(chosenIndices);
+    setPreviousImpostorNames(Array.from(impostorIndices).map(idx => playerNames[idx]));
 
     // Asignar a cada impostor una pista individual única de la lista
     let impostorCounter = 0;

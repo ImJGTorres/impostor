@@ -438,10 +438,11 @@ export function GameProvider({ children }) {
     const eliminatedCount = updatedPlayers.filter(p => !p.isAlive).length;
 
     // Caso especial: Ronda secreta de Paranoia (Todos eran impostores)
-    // Se revela cuando se elimine a la cantidad de impostores configurada (impostorCount)
+    // Se revela cuando se elimine a "la cantidad de impostores configurada + 1"
+    const targetEliminations = Math.min(impostorCount + 1, updatedPlayers.length - 1);
     if (isAllImpostorsRound) {
-      if (eliminatedCount >= impostorCount) {
-        // Se sacó a los impostores configurados: ¡Momento del clímax y gran revelación!
+      if (eliminatedCount >= targetEliminations) {
+        // Se sacó a los impostores configurados + 1: ¡Momento del clímax y gran revelación!
         confetti({
           particleCount: 120,
           spread: 100,
@@ -450,8 +451,8 @@ export function GameProvider({ children }) {
         setCurrentScreen('IMPOSTOR_WINS');
         return;
       } else {
-        // Aún faltan impostores por sacar según lo configurado en la ronda:
-        // Pasa a la pantalla normal de expulsión (INNOCENT_ELIMINATED)
+        // Aún no se alcanza la cuota de revelación (impostorCount + 1):
+        // Pasa a la pantalla de expulsión con intriga y confusión (INNOCENT_ELIMINATED)
         confetti({
           particleCount: 50,
           spread: 60,

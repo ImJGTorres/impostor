@@ -12,7 +12,8 @@ export default function ImpostorWinsScreen() {
     startNewGame,
     returnToHome,
     withClues,
-    isAllImpostorsRound
+    isAllImpostorsRound,
+    impostorCount
   } = useGame();
 
   const playersList = assignedPlayers || [];
@@ -49,7 +50,7 @@ export default function ImpostorWinsScreen() {
               <span className="ha-ganado-text">IMPOSTORES!</span>
             </h1>
             <p className="impostor-win-desc">
-              ¡Nadie conocía la palabra secreta ni tenía pistas! Todos estuvieron fingiendo, mintiendo y sospechando entre sí durante toda la ronda.
+              ¡Nadie conocía la palabra secreta ni tenía pistas! Por eso la partida no terminó al sacar a los {impostorCount} {impostorCount === 1 ? 'impostor' : 'impostores'} pactados: ¡toda la mesa era infiltrada!
             </p>
           </div>
         ) : (

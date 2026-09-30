@@ -17,13 +17,14 @@ export default function InnocentEliminatedScreen() {
 
   const eliminatedCount = assignedPlayers.filter(p => !p.isAlive).length;
 
-  const remainingCivilians = isAllImpostorsRound
-    ? assignedPlayers.length - impostorCount
-    : assignedPlayers.filter(p => !p.isImpostor && p.isAlive).length;
-
+  // En la ronda paranoia, siempre simulamos que al menos queda 1 impostor para que parezca que el juego se bugeó
   const remainingImpostors = isAllImpostorsRound
-    ? Math.max(0, impostorCount - eliminatedCount)
+    ? Math.max(1, impostorCount - eliminatedCount)
     : assignedPlayers.filter(p => p.isImpostor && p.isAlive).length;
+
+  const remainingCivilians = isAllImpostorsRound
+    ? Math.max(1, assignedPlayers.filter(p => p.isAlive).length - remainingImpostors)
+    : assignedPlayers.filter(p => !p.isImpostor && p.isAlive).length;
 
   const isHighDanger = remainingCivilians - remainingImpostors <= 1;
 

@@ -46,18 +46,30 @@ function normalizeRow(row) {
  */
 export function buildCategoryTree(rawItems) {
   const ufpsWords = [];
+  const ufpsSubtopicsMap = new Map();
   const generalSubtopicsMap = new Map();
 
   rawItems.forEach(item => {
     if (!item) return;
 
     if (item.section === 'ufps') {
-      ufpsWords.push({
+      const subId = (item.subtopic || 'general_sistemas').toLowerCase().replace(/[^a-z0-9]/g, '_');
+      if (!ufpsSubtopicsMap.has(subId)) {
+        ufpsSubtopicsMap.set(subId, {
+          id: subId,
+          name: item.subtopic || 'General Sistemas',
+          words: []
+        });
+      }
+      const wordObj = {
         word: item.word,
         hint: item.hint,
         hints: item.hints || [item.hint],
-        group: item.subtopic
-      });
+        group: item.subtopic,
+        categoryName: `UFPS › ${item.subtopic || 'Sistemas'}`
+      };
+      ufpsSubtopicsMap.get(subId).words.push(wordObj);
+      ufpsWords.push(wordObj);
     } else {
       const subId = item.subtopic.toLowerCase().replace(/[^a-z0-9]/g, '_');
       if (!generalSubtopicsMap.has(subId)) {
@@ -78,6 +90,7 @@ export function buildCategoryTree(rawItems) {
 
   return {
     ufpsWords,
+    ufpsSubtopics: Array.from(ufpsSubtopicsMap.values()),
     generalSubtopics: Array.from(generalSubtopicsMap.values()),
     totalWords: rawItems.length
   };

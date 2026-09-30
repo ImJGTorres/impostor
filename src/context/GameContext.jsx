@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { getRandomGameWord, UFPS_CATEGORY, GENERAL_SUBTOPICS } from '../data/categories';
+import { getRandomGameWord, UFPS_CATEGORY, UFPS_SUBTOPICS, GENERAL_SUBTOPICS } from '../data/categories';
 import {
   loadInitialWords,
   loadWordsFromGoogleSheets,
@@ -70,6 +70,7 @@ export function GameProvider({ children }) {
   const [discussionTime, setDiscussionTime] = useState(90); // en segundos
   const [selectedCategories, setSelectedCategories] = useState(['general']); // ['general'], ['ufps'], o ['general', 'ufps']
   const [activeSubtopics, setActiveSubtopics] = useState(['videojuegos', 'comida', 'peliculas']);
+  const [activeUfpsSubtopics, setActiveUfpsSubtopics] = useState(['profesores', 'materias', 'campus', 'comunidad', 'directivos']);
   const [previousImpostorNames, setPreviousImpostorNames] = useState([]);
 
   // Historial de sesión para rotación justa y sin repeticiones consecutivas
@@ -228,6 +229,11 @@ export function GameProvider({ children }) {
     ? dynamicWordsData.generalSubtopics
     : GENERAL_SUBTOPICS;
 
+  // Subtemas actuales disponibles para UFPS / Sistemas
+  const currentUfpsSubtopics = dynamicWordsData?.ufpsSubtopics?.length > 0
+    ? dynamicWordsData.ufpsSubtopics
+    : UFPS_SUBTOPICS;
+
   // Palabras de UFPS actuales
   const currentUfpsWords = dynamicWordsData?.ufpsWords?.length > 0
     ? dynamicWordsData.ufpsWords
@@ -267,6 +273,18 @@ export function GameProvider({ children }) {
     });
   };
 
+  // Conmutar subtema en UFPS (Sistemas)
+  const toggleUfpsSubtopic = (subtopicId) => {
+    setActiveUfpsSubtopics(prev => {
+      if (prev.includes(subtopicId)) {
+        if (prev.length === 1) return prev; // Mantener al menos uno activo
+        return prev.filter(id => id !== subtopicId);
+      } else {
+        return [...prev, subtopicId];
+      }
+    });
+  };
+
   // Iniciar partida
   const startNewGame = () => {
     if (playerNames.length < 3) return;
@@ -276,7 +294,8 @@ export function GameProvider({ children }) {
       selectedCategories,
       activeSubtopics,
       dynamicWordsData,
-      recentWordsRef.current
+      recentWordsRef.current,
+      activeUfpsSubtopics
     );
     setSecretInfo(wordData);
     recentWordsRef.current = [wordData.word.toUpperCase(), ...(recentWordsRef.current || []).slice(0, 15)];
@@ -547,6 +566,10 @@ export function GameProvider({ children }) {
         setMainCategory,
         activeSubtopics,
         toggleSubtopic,
+        activeUfpsSubtopics,
+        setActiveUfpsSubtopics,
+        toggleUfpsSubtopic,
+        currentUfpsSubtopics,
         startNewGame,
         assignedPlayers,
         secretInfo,

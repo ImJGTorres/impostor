@@ -1,50 +1,81 @@
 // Diccionario de categorías y palabras para El Impostor
 // Incluye categorías UFPS (Ingeniería de Sistemas) y General (Subtemas combinables)
 
+export const UFPS_SUBTOPICS = [
+  {
+    id: 'profesores',
+    name: 'Profesores',
+    icon: 'GraduationCap',
+    words: [
+      { word: 'Ing. Milton Jesús', hint: 'Docente titular de bases de datos y algoritmos', group: 'Profesores', categoryName: 'UFPS › Profesores' },
+      { word: 'Ing. Judith del Pilar', hint: 'Docente líder en procesos de acreditación y calidad de sistemas', group: 'Profesores', categoryName: 'UFPS › Profesores' },
+      { word: 'Ing. Claudia Gómez', hint: 'Docente destacada del departamento de sistemas e informática', group: 'Profesores', categoryName: 'UFPS › Profesores' },
+      { word: 'Ing. Marco Adarme', hint: 'Profesor experto en redes, desarrollo web y sistemas distribuidos', group: 'Profesores', categoryName: 'UFPS › Profesores' },
+      { word: 'Ing. Carlos René', hint: 'Profesor de programación y algoritmos avanzados', group: 'Profesores', categoryName: 'UFPS › Profesores' },
+      { word: 'Ing. Sergio Castro', hint: 'Docente de ingeniería de software y desarrollo', group: 'Profesores', categoryName: 'UFPS › Profesores' }
+    ]
+  },
+  {
+    id: 'materias',
+    name: 'Materias',
+    icon: 'Laptop',
+    words: [
+      { word: 'Programación Móvil', hint: 'Asignatura donde se construyen apps para Android, iOS y celulares', group: 'Materias', categoryName: 'UFPS › Materias' },
+      { word: 'Bases de Datos', hint: 'Materia sobre SQL, modelo relacional, claves foráneas y consultas', group: 'Materias', categoryName: 'UFPS › Materias' },
+      { word: 'Estructuras de Datos', hint: 'Materia con listas enlazadas, pilas, colas, grafos y árboles binarios', group: 'Materias', categoryName: 'UFPS › Materias' },
+      { word: 'Ingeniería de Software', hint: 'Materia sobre Scrum, diagramas de clases, historias de usuario y testing', group: 'Materias', categoryName: 'UFPS › Materias' },
+      { word: 'Sistemas Operativos', hint: 'Materia donde se aprende de memoria virtual, procesos, hilos y Linux', group: 'Materias', categoryName: 'UFPS › Materias' },
+      { word: 'Redes de Computadores', hint: 'Materia enfocada en cables UTP, modelo OSI, routers y paquetes IP', group: 'Materias', categoryName: 'UFPS › Materias' },
+      { word: 'Arquitectura de Software', hint: 'Materia de patrones de diseño, microservicios y escalabilidad', group: 'Materias', categoryName: 'UFPS › Materias' },
+      { word: 'Inteligencia Artificial', hint: 'Materia sobre redes neuronales, modelos predictivos y algoritmos genéticos', group: 'Materias', categoryName: 'UFPS › Materias' },
+      { word: 'Cálculo Integral', hint: 'Materia de ciencias básicas con sumas de Riemann y áreas bajo la curva', group: 'Materias', categoryName: 'UFPS › Materias' }
+    ]
+  },
+  {
+    id: 'campus',
+    name: 'Campus',
+    icon: 'Building2',
+    words: [
+      { word: 'Sala de Cómputo de Sistemas', hint: 'Salón con computadores donde se realizan las prácticas de laboratorio', group: 'Campus', categoryName: 'UFPS › Campus' },
+      { word: 'Biblioteca Eduardo Cote Lamus', hint: 'Edificio silencioso de varios pisos para consultar libros e investigar', group: 'Campus', categoryName: 'UFPS › Campus' },
+      { word: 'Plazoleta de Telecomunicaciones', hint: 'Zona al aire libre muy concurrida cerca al edificio de ingeniería', group: 'Campus', categoryName: 'UFPS › Campus' },
+      { word: 'Cafetería Central', hint: 'Punto de reunión para comprar empanadas, café o almorzar con amigos', group: 'Campus', categoryName: 'UFPS › Campus' },
+      { word: 'Canchas de Microfútbol', hint: 'Zona de deportes detrás de las aulas para jugar partidos entre semestres', group: 'Campus', categoryName: 'UFPS › Campus' },
+      { word: 'Edificio Fundadores', hint: 'Construcción histórica y representativa del campus universitario', group: 'Campus', categoryName: 'UFPS › Campus' },
+      { word: 'Auditorio Eustorgio Colmenares', hint: 'Lugar ceremonial donde se realizan congresos, ponencias y grados', group: 'Campus', categoryName: 'UFPS › Campus' },
+      { word: 'Jardín Botánico UFPS', hint: 'Espacio verde y natural ideal para descansar entre clases', group: 'Campus', categoryName: 'UFPS › Campus' }
+    ]
+  },
+  {
+    id: 'comunidad',
+    name: 'Comunidad',
+    icon: 'Users',
+    words: [
+      { word: 'Monitor de Laboratorio', hint: 'Estudiante de semestre superior que te ayuda a depurar el código', group: 'Comunidad', categoryName: 'UFPS › Comunidad' },
+      { word: 'Tesista de Grado', hint: 'Estudiante de último semestre redactando su proyecto final de carrera', group: 'Comunidad', categoryName: 'UFPS › Comunidad' },
+      { word: 'Representante Estudiantil', hint: 'Voz elegida por los estudiantes ante los comités de la universidad', group: 'Comunidad', categoryName: 'UFPS › Comunidad' },
+      { word: 'Estudiante Primíparo', hint: 'Persona recién ingresada perdida buscando los salones el primer día', group: 'Comunidad', categoryName: 'UFPS › Comunidad' }
+    ]
+  },
+  {
+    id: 'directivos',
+    name: 'Directivos',
+    icon: 'Award',
+    words: [
+      { word: 'Director de Plan de Estudios', hint: 'Persona a cargo de autorizaciones, cancelaciones y carga académica', group: 'Directivos', categoryName: 'UFPS › Directivos' },
+      { word: 'Decano de Ingeniería', hint: 'Máxima autoridad de la facultad de ingenierías de la UFPS', group: 'Directivos', categoryName: 'UFPS › Directivos' }
+    ]
+  }
+];
+
 export const UFPS_CATEGORY = {
   id: 'ufps',
   name: 'UFPS',
   tag: 'ESPECIAL',
   subtitle: 'Ing. de Sistemas, profes, campus...',
   badge: 'Cúcuta campus',
-  words: [
-    // Profesores & Directivos
-    { word: 'Ing. Milton Jesús', hint: 'Docente titular de bases de datos y algoritmos', group: 'Profesores' },
-    { word: 'Ing. Judith del Pilar', hint: 'Docente líder en procesos de acreditación y calidad de sistemas', group: 'Profesores' },
-    { word: 'Ing. Claudia Gómez', hint: 'Docente destacada del departamento de sistemas e informática', group: 'Profesores' },
-    { word: 'Ing. Marco Adarme', hint: 'Profesor experto en redes, desarrollo web y sistemas distribuidos', group: 'Profesores' },
-    { word: 'Ing. Carlos René', hint: 'Profesor de programación y algoritmos avanzados', group: 'Profesores' },
-    { word: 'Ing. Sergio Castro', hint: 'Docente de ingeniería de software y desarrollo', group: 'Profesores' },
-    { word: 'Director de Plan de Estudios', hint: 'Persona a cargo de autorizaciones, cancelaciones y carga académica', group: 'Directivos' },
-    { word: 'Decano de Ingeniería', hint: 'Máxima autoridad de la facultad de ingenierías de la UFPS', group: 'Directivos' },
-
-    // Materias
-    { word: 'Programación Móvil', hint: 'Asignatura donde se construyen apps para Android, iOS y celulares', group: 'Materias' },
-    { word: 'Bases de Datos', hint: 'Materia sobre SQL, modelo relacional, claves foráneas y consultas', group: 'Materias' },
-    { word: 'Estructuras de Datos', hint: 'Materia con listas enlazadas, pilas, colas, grafos y árboles binarios', group: 'Materias' },
-    { word: 'Ingeniería de Software', hint: 'Materia sobre Scrum, diagramas de clases, historias de usuario y testing', group: 'Materias' },
-    { word: 'Sistemas Operativos', hint: 'Materia donde se aprende de memoria virtual, procesos, hilos y Linux', group: 'Materias' },
-    { word: 'Redes de Computadores', hint: 'Materia enfocada en cables UTP, modelo OSI, routers y paquetes IP', group: 'Materias' },
-    { word: 'Arquitectura de Software', hint: 'Materia de patrones de diseño, microservicios y escalabilidad', group: 'Materias' },
-    { word: 'Inteligencia Artificial', hint: 'Materia sobre redes neuronales, modelos predictivos y algoritmos genéticos', group: 'Materias' },
-    { word: 'Cálculo Integral', hint: 'Materia de ciencias básicas con sumas de Riemann y áreas bajo la curva', group: 'Materias' },
-
-    // Lugares del Campus
-    { word: 'Sala de Cómputo de Sistemas', hint: 'Salón con computadores donde se realizan las prácticas de laboratorio', group: 'Campus' },
-    { word: 'Biblioteca Eduardo Cote Lamus', hint: 'Edificio silencioso de varios pisos para consultar libros e investigar', group: 'Campus' },
-    { word: 'Plazoleta de Telecomunicaciones', hint: 'Zona al aire libre muy concurrida cerca al edificio de ingeniería', group: 'Campus' },
-    { word: 'Cafetería Central', hint: 'Punto de reunión para comprar empanadas, café o almorzar con amigos', group: 'Campus' },
-    { word: 'Canchas de Microfútbol', hint: 'Zona de deportes detrás de las aulas para jugar partidos entre semestres', group: 'Campus' },
-    { word: 'Edificio Fundadores', hint: 'Construcción histórica y representativa del campus universitario', group: 'Campus' },
-    { word: 'Auditorio Eustorgio Colmenares', hint: 'Lugar ceremonial donde se realizan congresos, ponencias y grados', group: 'Campus' },
-    { word: 'Jardín Botánico UFPS', hint: 'Espacio verde y natural ideal para descansar entre clases', group: 'Campus' },
-
-    // Roles & Estudiantes
-    { word: 'Monitor de Laboratorio', hint: 'Estudiante de semestre superior que te ayuda a depurar el código', group: 'Comunidad' },
-    { word: 'Tesista de Grado', hint: 'Estudiante de último semestre redactando su proyecto final de carrera', group: 'Comunidad' },
-    { word: 'Representante Estudiantil', hint: 'Voz elegida por los estudiantes ante los comités de la universidad', group: 'Comunidad' },
-    { word: 'Estudiante Primíparo', hint: 'Persona recién ingresada perdida buscando los salones el primer día', group: 'Comunidad' }
-  ]
+  subtopics: UFPS_SUBTOPICS,
+  words: UFPS_SUBTOPICS.flatMap(s => s.words)
 };
 
 export const GENERAL_SUBTOPICS = [
@@ -116,7 +147,7 @@ export const GENERAL_SUBTOPICS = [
     icon: 'Trophy',
     words: [
       { word: 'FÚTBOL', hint: 'Deporte de dos equipos que buscan meter un balón esférico en el arco', categoryName: 'General › Deportes' },
-      { word: 'BALONCESTO', hint: 'Juego dinámico donde se anota encestando en un aro elevado', categoryName: 'General › Deportes' },
+      { word: 'BALONCESTO', hint: 'Juego dinámico donde se anota encestando en un aro elevated', categoryName: 'General › Deportes' },
       { word: 'TENIS', hint: 'Duelo con raquetas donde se pasa una pelota por encima de la red', categoryName: 'General › Deportes' },
       { word: 'FÓRMULA 1', hint: 'Competencia automovilística de monoplazas a altísimas velocidades', categoryName: 'General › Deportes' },
       { word: 'NATACIÓN', hint: 'Carrera acuática en diferentes estilos como libre y mariposa', categoryName: 'General › Deportes' },
@@ -131,7 +162,8 @@ export const GENERAL_CATEGORY = {
   tag: 'ACTIVO',
   subtitle: 'Cultura pop, cine, comida y temas...',
   badge: 'Variado clásico',
-  subtopics: GENERAL_SUBTOPICS
+  subtopics: GENERAL_SUBTOPICS,
+  words: GENERAL_SUBTOPICS.flatMap(s => s.words)
 };
 
 // Función para obtener una palabra aleatoria según la configuración elegida
@@ -139,10 +171,12 @@ export function getRandomGameWord(
   categoriesInput,
   activeSubtopicIds = ['videojuegos', 'comida', 'peliculas'],
   dynamicData = null,
-  recentWordList = []
+  recentWordList = [],
+  activeUfpsSubtopicIds = ['profesores', 'materias', 'campus', 'comunidad', 'directivos']
 ) {
-  const currentUfpsWords = dynamicData?.ufpsWords?.length > 0 ? dynamicData.ufpsWords : UFPS_CATEGORY.words;
-  const currentSubtopics = dynamicData?.generalSubtopics?.length > 0 ? dynamicData.generalSubtopics : GENERAL_SUBTOPICS;
+  const currentUfpsSubtopics = dynamicData?.ufpsSubtopics?.length > 0 ? dynamicData.ufpsSubtopics : UFPS_SUBTOPICS;
+  const currentGeneralSubtopics = dynamicData?.generalSubtopics?.length > 0 ? dynamicData.generalSubtopics : GENERAL_SUBTOPICS;
+  const fallbackUfpsWords = dynamicData?.ufpsWords?.length > 0 ? dynamicData.ufpsWords : UFPS_CATEGORY.words;
 
   // Normalizar categorías activas a un array (soporta ['general', 'ufps'], 'both', 'general', 'ufps')
   const activeCategories = Array.isArray(categoriesInput)
@@ -154,24 +188,33 @@ export function getRandomGameWord(
   // Si incluye General, recolectar las palabras de los subtemas activos
   if (activeCategories.includes('general')) {
     let generalWords = [];
-    currentSubtopics.forEach(sub => {
+    currentGeneralSubtopics.forEach(sub => {
       if (activeSubtopicIds.includes(sub.id)) {
         generalWords = generalWords.concat(sub.words);
       }
     });
     if (generalWords.length === 0) {
-      generalWords = currentSubtopics[0]?.words || GENERAL_SUBTOPICS[0].words;
+      generalWords = currentGeneralSubtopics[0]?.words || GENERAL_SUBTOPICS[0].words;
     }
     pool = pool.concat(generalWords);
   }
 
-  // Si incluye UFPS, recolectar las palabras de UFPS
+  // Si incluye UFPS, recolectar las palabras de los subtemas activos de UFPS
   if (activeCategories.includes('ufps')) {
-    pool = pool.concat(currentUfpsWords);
+    let ufpsWords = [];
+    currentUfpsSubtopics.forEach(sub => {
+      if (activeUfpsSubtopicIds.includes(sub.id)) {
+        ufpsWords = ufpsWords.concat(sub.words);
+      }
+    });
+    if (ufpsWords.length === 0) {
+      ufpsWords = fallbackUfpsWords;
+    }
+    pool = pool.concat(ufpsWords);
   }
 
   if (pool.length === 0) {
-    pool = currentUfpsWords;
+    pool = fallbackUfpsWords;
   }
 
   // Filtrar palabras recientemente jugadas para evitar repeticiones consecutivas
@@ -197,4 +240,5 @@ export function getRandomGameWord(
     isUfps: isUfpsWord
   };
 }
+
 

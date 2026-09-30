@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { GraduationCap, Globe, Check, ArrowRight, BookOpen, Layers } from 'lucide-react';
 import Header from '../common/Header';
 import { useGame } from '../../context/GameContext';
-import { UFPS_CATEGORY, GENERAL_SUBTOPICS } from '../../data/categories';
+import { UFPS_CATEGORY, UFPS_SUBTOPICS, GENERAL_SUBTOPICS } from '../../data/categories';
 
 export default function PacksScreen() {
   const {
@@ -13,6 +13,7 @@ export default function PacksScreen() {
     setCurrentScreen,
     setActiveTab,
     currentUfpsWords,
+    currentUfpsSubtopics,
     currentGeneralSubtopics
   } = useGame();
 
@@ -20,6 +21,7 @@ export default function PacksScreen() {
   const isGeneralActive = (selectedCategories || []).includes('general');
 
   const ufpsList = currentUfpsWords?.length > 0 ? currentUfpsWords : UFPS_CATEGORY.words;
+  const ufpsSubList = currentUfpsSubtopics?.length > 0 ? currentUfpsSubtopics : UFPS_SUBTOPICS;
   const generalList = currentGeneralSubtopics?.length > 0 ? currentGeneralSubtopics : GENERAL_SUBTOPICS;
 
   const [activeTabFilter, setActiveTabFilter] = useState('all'); // 'all' | 'ufps' | 'general'
@@ -96,10 +98,11 @@ export default function PacksScreen() {
               </p>
 
               <div className="pack-tags-wrap">
-                <span className="pack-subtag">👨‍🏫 Profesores</span>
-                <span className="pack-subtag">💻 Materias Troncales</span>
-                <span className="pack-subtag">🏛️ Campus & Aulas</span>
-                <span className="pack-subtag">👥 Vida Universitaria</span>
+                {ufpsSubList.map(sub => (
+                  <span key={sub.id} className="pack-subtag">
+                    {sub.name} ({sub.words?.length || 0})
+                  </span>
+                ))}
               </div>
 
               <div className="pack-words-sample">

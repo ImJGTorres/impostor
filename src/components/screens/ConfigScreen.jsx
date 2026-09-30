@@ -12,12 +12,17 @@ import {
   Utensils,
   Clapperboard,
   Trophy,
+  Laptop,
+  Building2,
+  Award,
+  BookOpen,
+  Sparkles,
   ArrowRight,
   Info
 } from 'lucide-react';
 import Header from '../common/Header';
 import { useGame } from '../../context/GameContext';
-import { GENERAL_SUBTOPICS } from '../../data/categories';
+import { GENERAL_SUBTOPICS, UFPS_SUBTOPICS } from '../../data/categories';
 
 export default function ConfigScreen() {
   const {
@@ -34,9 +39,12 @@ export default function ConfigScreen() {
     setMainCategory,
     activeSubtopics,
     toggleSubtopic,
+    activeUfpsSubtopics,
+    toggleUfpsSubtopic,
     startNewGame,
     setCurrentScreen,
-    currentGeneralSubtopics
+    currentGeneralSubtopics,
+    currentUfpsSubtopics
   } = useGame();
 
   const isUfpsActive = (selectedCategories || []).includes('ufps');
@@ -71,15 +79,23 @@ export default function ConfigScreen() {
     }
   };
 
-  const getSubtopicIcon = (iconName) => {
-    switch (iconName) {
-      case 'Gamepad2': return <Gamepad2 size={15} />;
-      case 'Utensils': return <Utensils size={15} />;
-      case 'Globe': return <Globe size={15} />;
-      case 'Clapperboard': return <Clapperboard size={15} />;
-      case 'Trophy': return <Trophy size={15} />;
-      default: return null;
-    }
+  const getSubtopicIcon = (iconName, name = '') => {
+    const n = (name || '').toLowerCase();
+    const icon = iconName || '';
+
+    if (icon === 'GraduationCap' || n.includes('profe') || n.includes('docente')) return <GraduationCap size={15} />;
+    if (icon === 'Laptop' || icon === 'Code' || icon === 'Terminal' || n.includes('materia') || n.includes('program') || n.includes('software')) return <Laptop size={15} />;
+    if (icon === 'Building2' || icon === 'Landmark' || n.includes('campus') || n.includes('lugar') || n.includes('aula') || n.includes('edificio')) return <Building2 size={15} />;
+    if (icon === 'Users' || n.includes('comunidad') || n.includes('estudiant') || n.includes('rol') || n.includes('alumno')) return <Users size={15} />;
+    if (icon === 'Award' || icon === 'ShieldCheck' || n.includes('directiv') || n.includes('decano') || n.includes('director')) return <Award size={15} />;
+    if (icon === 'Gamepad2' || n.includes('juego') || n.includes('gaming')) return <Gamepad2 size={15} />;
+    if (icon === 'Utensils' || n.includes('comida') || n.includes('gastronom')) return <Utensils size={15} />;
+    if (icon === 'Globe' || n.includes('pais') || n.includes('país') || n.includes('mundo')) return <Globe size={15} />;
+    if (icon === 'Clapperboard' || n.includes('pelicula') || n.includes('película') || n.includes('cine')) return <Clapperboard size={15} />;
+    if (icon === 'Trophy' || n.includes('deporte')) return <Trophy size={15} />;
+    if (icon === 'BookOpen' || n.includes('libro')) return <BookOpen size={15} />;
+
+    return <Sparkles size={14} />;
   };
 
   return (
@@ -326,13 +342,50 @@ export default function ConfigScreen() {
             </div>
           </div>
 
-          {/* Subtemas activos (visible cuando General está seleccionado) */}
-          {isGeneralActive && (
-            <div className="subtopics-section">
+          {/* Subtemas activos de UFPS / Sistemas (visible cuando UFPS está seleccionado) */}
+          {isUfpsActive && (
+            <div className="subtopics-section ufps-subtopics-section">
               <div className="subtopics-header">
                 <div className="subtopics-title-wrap">
-                  <span className="subtopics-icon">⚏</span>
-                  <span className="subtopics-title">SUBTEMAS ACTIVOS</span>
+                  <GraduationCap size={15} className="subtopics-icon-decor" />
+                  <span className="subtopics-title">SUBTEMAS UFPS (SISTEMAS)</span>
+                </div>
+                <span className="subtopics-count">{activeUfpsSubtopics.length} elegidos</span>
+              </div>
+
+              <div className="subtopics-pills-wrap">
+                {(currentUfpsSubtopics || UFPS_SUBTOPICS).map((sub) => {
+                  const isActive = activeUfpsSubtopics.includes(sub.id);
+                  return (
+                    <button
+                      key={sub.id}
+                      type="button"
+                      className={`subtopic-chip ${isActive ? 'active' : ''}`}
+                      onClick={() => toggleUfpsSubtopic(sub.id)}
+                    >
+                      {getSubtopicIcon(sub.icon, sub.name)}
+                      <span>{sub.name}</span>
+                      {isActive && <Check size={13} className="subtopic-check" />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <p className="subtopics-hint">
+                {isGeneralActive
+                  ? 'Palabras de UFPS y General se combinarán según los subtemas activos.'
+                  : 'Toca cualquier tema de Sistemas para incluirlo o excluirlo de las palabras secretas.'}
+              </p>
+            </div>
+          )}
+
+          {/* Subtemas activos de General (visible cuando General está seleccionado) */}
+          {isGeneralActive && (
+            <div className="subtopics-section general-subtopics-section">
+              <div className="subtopics-header">
+                <div className="subtopics-title-wrap">
+                  <Globe size={15} className="subtopics-icon-decor" />
+                  <span className="subtopics-title">SUBTEMAS GENERAL</span>
                 </div>
                 <span className="subtopics-count">{activeSubtopics.length} elegidos</span>
               </div>
@@ -347,7 +400,7 @@ export default function ConfigScreen() {
                       className={`subtopic-chip ${isActive ? 'active' : ''}`}
                       onClick={() => toggleSubtopic(sub.id)}
                     >
-                      {getSubtopicIcon(sub.icon)}
+                      {getSubtopicIcon(sub.icon, sub.name)}
                       <span>{sub.name}</span>
                       {isActive && <Check size={13} className="subtopic-check" />}
                     </button>

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { getRandomGameWord, UFPS_CATEGORY, GENERAL_SUBTOPICS } from '../data/categories';
 import {
   loadInitialWords,
@@ -68,9 +68,43 @@ export function GameProvider({ children }) {
   const [impostorCount, setImpostorCount] = useState(1);
   const [withClues, setWithClues] = useState(true); // true = Con pista, false = Sin pista
   const [discussionTime, setDiscussionTime] = useState(90); // en segundos
-  const [mainCategory, setMainCategory] = useState('general'); // 'ufps' | 'general'
+  const [selectedCategories, setSelectedCategories] = useState(['general']); // ['general'], ['ufps'], o ['general', 'ufps']
   const [activeSubtopics, setActiveSubtopics] = useState(['videojuegos', 'comida', 'peliculas']);
   const [previousImpostorNames, setPreviousImpostorNames] = useState([]);
+
+  // Historial de sesión para rotación justa y sin repeticiones consecutivas
+  const impostorCountsRef = useRef({});
+  const recentImpostorsRef = useRef([]);
+  const starterCountsRef = useRef({});
+  const recentStarterRef = useRef(null);
+  const recentWordsRef = useRef([]);
+
+  // Alternar categoría garantizando mínimo 1 seleccionada (permite ambas)
+  const toggleCategory = (catId) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(catId)) {
+        if (prev.length <= 1) return prev; // Mínimo 1 categoría activa
+        return prev.filter(c => c !== catId);
+      } else {
+        return [...prev, catId];
+      }
+    });
+  };
+
+  // Compatibilidad con código que lea mainCategory
+  const mainCategory = selectedCategories.length === 2
+    ? 'both'
+    : (selectedCategories[0] || 'general');
+
+  const setMainCategory = (val) => {
+    if (Array.isArray(val)) {
+      if (val.length > 0) setSelectedCategories(val);
+    } else if (val === 'both') {
+      setSelectedCategories(['general', 'ufps']);
+    } else if (val === 'general' || val === 'ufps') {
+      setSelectedCategories([val]);
+    }
+  };
 
   // Estado activo de la partida
   const [assignedPlayers, setAssignedPlayers] = useState(defaultMockPlayers);
@@ -226,48 +260,62 @@ export function GameProvider({ children }) {
   const startNewGame = () => {
     if (playerNames.length < 3) return;
 
-    const wordData = getRandomGameWord(mainCategory, activeSubtopics, dynamicWordsData);
+    // 1. Obtener palabra secreta de las categorías activas (evitando palabras recientes)
+    const wordData = getRandomGameWord(
+      selectedCategories,
+      activeSubtopics,
+      dynamicWordsData,
+      recentWordsRef.current
+    );
     setSecretInfo(wordData);
+    recentWordsRef.current = [wordData.word.toUpperCase(), ...(recentWordsRef.current || []).slice(0, 15)];
 
-    // Extraer lista de pistas individuales (si vienen como "delfín, motor, llave" o array)
+    // 2. Extraer lista de pistas individuales
     const availableHints = (wordData.hints && wordData.hints.length > 0)
       ? [...wordData.hints]
       : (wordData.hint ? wordData.hint.split(/[,;]/).map(s => s.trim()).filter(Boolean) : ['Sin pista disponible']);
 
-    // Función barajado Fisher-Yates (uniforme y sin sesgos)
-    const shuffleArray = (arr) => {
-      const copy = [...arr];
-      for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-      }
-      return copy;
-    };
-
-    // Selección inteligente de impostores evitando repetir exactamente los mismos de la partida anterior
-    const allIndices = [...Array(playerNames.length).keys()];
-    const nonPrevIndices = allIndices.filter(
-      idx => !previousImpostorNames.includes(playerNames[idx])
-    );
-
-    let chosenIndices = [];
-    if (nonPrevIndices.length >= impostorCount) {
-      // Elegir impostores completamente nuevos entre quienes no fueron impostores la ronda anterior
-      chosenIndices = shuffleArray(nonPrevIndices).slice(0, impostorCount);
-    } else {
-      // Usar a los que no fueron impostores y completar con el resto barajado
-      const remainingNeeded = impostorCount - nonPrevIndices.length;
-      const restIndices = shuffleArray(allIndices.filter(idx => !nonPrevIndices.includes(idx)));
-      chosenIndices = [...nonPrevIndices, ...restIndices.slice(0, remainingNeeded)];
+    // Barajar pistas
+    for (let i = availableHints.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [availableHints[i], availableHints[j]] = [availableHints[j], availableHints[i]];
     }
 
-    const impostorIndices = new Set(chosenIndices);
-    setPreviousImpostorNames(Array.from(impostorIndices).map(idx => playerNames[idx]));
+    // 3. Selección equitativa y aleatoria de impostores (cero repeticiones consecutivas indebidas)
+    const counts = impostorCountsRef.current;
+    playerNames.forEach(name => {
+      if (counts[name] === undefined) counts[name] = 0;
+    });
 
-    // Asignar a cada impostor una pista individual única de la lista
+    let eligible = playerNames.filter(name => !recentImpostorsRef.current.includes(name));
+    if (eligible.length < impostorCount) {
+      eligible = [...playerNames];
+    }
+
+    // Barajado Fisher-Yates sobre elegibles para romper empates de forma 100% aleatoria
+    const shuffledEligible = [...eligible];
+    for (let i = shuffledEligible.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledEligible[i], shuffledEligible[j]] = [shuffledEligible[j], shuffledEligible[i]];
+    }
+
+    // Ordenar por menor cantidad de veces siendo impostor en la sesión
+    shuffledEligible.sort((a, b) => (counts[a] || 0) - (counts[b] || 0));
+    const chosenImpostorNames = shuffledEligible.slice(0, impostorCount);
+
+    // Actualizar historial
+    chosenImpostorNames.forEach(name => {
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    recentImpostorsRef.current = [...chosenImpostorNames];
+    setPreviousImpostorNames(chosenImpostorNames);
+
+    const impostorNameSet = new Set(chosenImpostorNames);
+
+    // Asignar roles a jugadores
     let impostorCounter = 0;
     const playersWithRoles = playerNames.map((name, idx) => {
-      const isImp = impostorIndices.has(idx);
+      const isImp = impostorNameSet.has(name);
       let assignedHint = null;
       if (isImp) {
         assignedHint = availableHints[impostorCounter % availableHints.length];
@@ -290,9 +338,28 @@ export function GameProvider({ children }) {
     setRoundHistory([]);
     setLastEliminated(null);
 
-    // Seleccionar quién da la primera pista al azar
-    const randomStarter = playersWithRoles[Math.floor(Math.random() * playersWithRoles.length)].name;
-    setFirstCluePlayer(randomStarter);
+    // 4. Selección equitativa de quién inicia la ronda de palabras (cero repeticiones consecutivas)
+    const starterCounts = starterCountsRef.current;
+    playerNames.forEach(name => {
+      if (starterCounts[name] === undefined) starterCounts[name] = 0;
+    });
+
+    let eligibleStarters = playerNames.filter(name => name !== recentStarterRef.current);
+    if (eligibleStarters.length === 0) {
+      eligibleStarters = [...playerNames];
+    }
+
+    const shuffledStarters = [...eligibleStarters];
+    for (let i = shuffledStarters.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledStarters[i], shuffledStarters[j]] = [shuffledStarters[j], shuffledStarters[i]];
+    }
+
+    shuffledStarters.sort((a, b) => (starterCounts[a] || 0) - (starterCounts[b] || 0));
+    const chosenStarter = shuffledStarters[0];
+    starterCounts[chosenStarter] = (starterCounts[chosenStarter] || 0) + 1;
+    recentStarterRef.current = chosenStarter;
+    setFirstCluePlayer(chosenStarter);
 
     // Ir a pantalla de entrega (Figma 1:127)
     setCurrentScreen('HANDOVER');
@@ -371,9 +438,12 @@ export function GameProvider({ children }) {
   // Comenzar nueva ronda tras voto inocente
   const startNextRoundOfClues = () => {
     setCurrentRound(prev => prev + 1);
-    const alive = assignedPlayers.filter(p => p.isAlive);
+    const alive = assignedPlayers.filter(p => p.isAlive).map(p => p.name);
     if (alive.length > 0) {
-      const nextStarter = alive[Math.floor(Math.random() * alive.length)].name;
+      const eligibleAlive = alive.filter(name => name !== recentStarterRef.current);
+      const candidates = eligibleAlive.length > 0 ? eligibleAlive : alive;
+      const nextStarter = candidates[Math.floor(Math.random() * candidates.length)];
+      recentStarterRef.current = nextStarter;
       setFirstCluePlayer(nextStarter);
     }
     setCurrentScreen('CLUES');
@@ -404,6 +474,9 @@ export function GameProvider({ children }) {
         setWithClues,
         discussionTime,
         setDiscussionTime,
+        selectedCategories,
+        setSelectedCategories,
+        toggleCategory,
         mainCategory,
         setMainCategory,
         activeSubtopics,

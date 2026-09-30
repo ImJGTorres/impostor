@@ -6,6 +6,8 @@ import { UFPS_CATEGORY, GENERAL_SUBTOPICS } from '../../data/categories';
 
 export default function PacksScreen() {
   const {
+    selectedCategories,
+    toggleCategory,
     mainCategory,
     setMainCategory,
     setCurrentScreen,
@@ -14,15 +16,16 @@ export default function PacksScreen() {
     currentGeneralSubtopics
   } = useGame();
 
+  const isUfpsActive = (selectedCategories || []).includes('ufps');
+  const isGeneralActive = (selectedCategories || []).includes('general');
+
   const ufpsList = currentUfpsWords?.length > 0 ? currentUfpsWords : UFPS_CATEGORY.words;
   const generalList = currentGeneralSubtopics?.length > 0 ? currentGeneralSubtopics : GENERAL_SUBTOPICS;
 
   const [activeTabFilter, setActiveTabFilter] = useState('all'); // 'all' | 'ufps' | 'general'
 
-  const handleSelectPack = (packId) => {
-    setMainCategory(packId);
-    setActiveTab('lobby');
-    setCurrentScreen('CONFIG');
+  const handleTogglePack = (packId) => {
+    toggleCategory(packId);
   };
 
   return (
@@ -74,13 +77,13 @@ export default function PacksScreen() {
         <div className="packs-list">
           {/* Pack UFPS */}
           {(activeTabFilter === 'all' || activeTabFilter === 'ufps') && (
-            <div className={`pack-card ${mainCategory === 'ufps' ? 'selected' : ''}`}>
+            <div className={`pack-card ${isUfpsActive ? 'selected' : ''}`}>
               <div className="pack-card-top">
                 <div className="pack-brand-badge">
                   <GraduationCap size={16} color="#FFFFFF" />
                   <span>ESPECIAL UFPS</span>
                 </div>
-                {mainCategory === 'ufps' && (
+                {isUfpsActive && (
                   <span className="badge-pill badge-red selected-pill">
                     <Check size={12} /> ACTIVO
                   </span>
@@ -108,9 +111,9 @@ export default function PacksScreen() {
 
               <button
                 className="btn-primary select-pack-btn"
-                onClick={() => handleSelectPack('ufps')}
+                onClick={() => handleTogglePack('ufps')}
               >
-                <span>{mainCategory === 'ufps' ? 'Baraja Seleccionada' : 'Jugar con Baraja UFPS'}</span>
+                <span>{isUfpsActive ? 'Baraja UFPS Activa ✓' : 'Activar Baraja UFPS'}</span>
                 <ArrowRight size={16} />
               </button>
             </div>
@@ -118,13 +121,13 @@ export default function PacksScreen() {
 
           {/* Pack General */}
           {(activeTabFilter === 'all' || activeTabFilter === 'general') && (
-            <div className={`pack-card ${mainCategory === 'general' ? 'selected' : ''}`}>
+            <div className={`pack-card ${isGeneralActive ? 'selected' : ''}`}>
               <div className="pack-card-top">
                 <div className="pack-brand-badge general-badge">
                   <Globe size={16} color="#FFFFFF" />
                   <span>VARIADO CLÁSICO</span>
                 </div>
-                {mainCategory === 'general' && (
+                {isGeneralActive && (
                   <span className="badge-pill badge-red selected-pill">
                     <Check size={12} /> ACTIVO
                   </span>
@@ -153,13 +156,37 @@ export default function PacksScreen() {
 
               <button
                 className="btn-primary select-pack-btn"
-                onClick={() => handleSelectPack('general')}
+                onClick={() => handleTogglePack('general')}
               >
-                <span>{mainCategory === 'general' ? 'Baraja Seleccionada' : 'Jugar con Baraja General'}</span>
+                <span>{isGeneralActive ? 'Baraja General Activa ✓' : 'Activar Baraja General'}</span>
                 <ArrowRight size={16} />
               </button>
             </div>
           )}
+        </div>
+
+        {/* Resumen de selección múltiple */}
+        <div className="neo-card" style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '14px' }}>
+          <div>
+            <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', display: 'block' }}>ESTADO DE BARAJAS</span>
+            <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-main)' }}>
+              {isUfpsActive && isGeneralActive
+                ? 'Ambas barajas combinadas'
+                : isUfpsActive
+                ? 'Solo UFPS'
+                : 'Solo General'}
+            </span>
+          </div>
+          <button
+            className="btn-primary"
+            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+            onClick={() => {
+              setActiveTab('lobby');
+              setCurrentScreen('CONFIG');
+            }}
+          >
+            Ir a Jugar
+          </button>
         </div>
       </main>
 

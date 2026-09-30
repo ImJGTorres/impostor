@@ -135,50 +135,66 @@ export const GENERAL_CATEGORY = {
 };
 
 // Función para obtener una palabra aleatoria según la configuración elegida
-export function getRandomGameWord(mainCategory, activeSubtopicIds = ['videojuegos', 'comida', 'peliculas'], dynamicData = null) {
+export function getRandomGameWord(
+  categoriesInput,
+  activeSubtopicIds = ['videojuegos', 'comida', 'peliculas'],
+  dynamicData = null,
+  recentWordList = []
+) {
   const currentUfpsWords = dynamicData?.ufpsWords?.length > 0 ? dynamicData.ufpsWords : UFPS_CATEGORY.words;
   const currentSubtopics = dynamicData?.generalSubtopics?.length > 0 ? dynamicData.generalSubtopics : GENERAL_SUBTOPICS;
 
-  if (mainCategory === 'ufps') {
-    const list = currentUfpsWords;
-    const selected = list[Math.floor(Math.random() * list.length)];
-    const parsedHints = selected.hints || (selected.hint ? selected.hint.split(/[,;]/).map(s => s.trim()).filter(Boolean) : []);
-    const hints = parsedHints.length > 0 ? parsedHints : [selected.hint || 'Sin pista disponible'];
+  // Normalizar categorías activas a un array (soporta ['general', 'ufps'], 'both', 'general', 'ufps')
+  const activeCategories = Array.isArray(categoriesInput)
+    ? categoriesInput
+    : (categoriesInput === 'both' ? ['general', 'ufps'] : [categoriesInput || 'general']);
 
-    return {
-      word: selected.word.toUpperCase(),
-      hint: hints[0],
-      hints: hints,
-      categoryName: `UFPS › ${selected.group || 'Ingeniería de Sistemas'}`,
-      categoryBadge: 'NIVEL 1',
-      isUfps: true
-    };
+  let pool = [];
+
+  // Si incluye General, recolectar las palabras de los subtemas activos
+  if (activeCategories.includes('general')) {
+    let generalWords = [];
+    currentSubtopics.forEach(sub => {
+      if (activeSubtopicIds.includes(sub.id)) {
+        generalWords = generalWords.concat(sub.words);
+      }
+    });
+    if (generalWords.length === 0) {
+      generalWords = currentSubtopics[0]?.words || GENERAL_SUBTOPICS[0].words;
+    }
+    pool = pool.concat(generalWords);
   }
 
-  // Si es General, recolectar las palabras de los subtemas activos
-  let pool = [];
-  currentSubtopics.forEach(sub => {
-    if (activeSubtopicIds.includes(sub.id)) {
-      pool = pool.concat(sub.words);
-    }
-  });
+  // Si incluye UFPS, recolectar las palabras de UFPS
+  if (activeCategories.includes('ufps')) {
+    pool = pool.concat(currentUfpsWords);
+  }
 
   if (pool.length === 0) {
-    // Si no seleccionó ninguno, usar el primer subtema disponible
-    pool = currentSubtopics[0]?.words || GENERAL_SUBTOPICS[0].words;
+    pool = currentUfpsWords;
   }
 
-  const chosen = pool[Math.floor(Math.random() * pool.length)];
+  // Filtrar palabras recientemente jugadas para evitar repeticiones consecutivas
+  const recentUpper = (recentWordList || []).map(w => (typeof w === 'string' ? w.toUpperCase() : ''));
+  const candidatePool = pool.filter(w => !recentUpper.includes(w.word.toUpperCase()));
+  const finalPool = candidatePool.length > 0 ? candidatePool : pool;
+
+  const chosen = finalPool[Math.floor(Math.random() * finalPool.length)];
   const parsedHints = chosen.hints || (chosen.hint ? chosen.hint.split(/[,;]/).map(s => s.trim()).filter(Boolean) : []);
   const hints = parsedHints.length > 0 ? parsedHints : [chosen.hint || 'Sin pista disponible'];
+
+  const isUfpsWord = chosen.isUfps || !!chosen.group || (!chosen.categoryName && !chosen.subtopic);
+  const categoryName = chosen.categoryName || (isUfpsWord
+    ? `UFPS › ${chosen.group || 'Ingeniería de Sistemas'}`
+    : `General › ${chosen.subtopic || 'Varios'}`);
 
   return {
     word: chosen.word.toUpperCase(),
     hint: hints[0],
     hints: hints,
-    categoryName: chosen.categoryName || `General › ${chosen.subtopic || 'Varios'}`,
+    categoryName,
     categoryBadge: 'NIVEL 1',
-    isUfps: false
+    isUfps: isUfpsWord
   };
 }
 

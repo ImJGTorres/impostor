@@ -28,6 +28,8 @@ export default function ConfigScreen() {
     setImpostorCount,
     withClues,
     setWithClues,
+    selectedCategories,
+    toggleCategory,
     mainCategory,
     setMainCategory,
     activeSubtopics,
@@ -36,6 +38,9 @@ export default function ConfigScreen() {
     setCurrentScreen,
     currentGeneralSubtopics
   } = useGame();
+
+  const isUfpsActive = (selectedCategories || []).includes('ufps');
+  const isGeneralActive = (selectedCategories || []).includes('general');
 
   const [inputName, setInputName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -268,18 +273,26 @@ export default function ConfigScreen() {
               <span className="section-emoji">🏷️</span>
               <h2 className="section-title">Categoría principal</h2>
             </div>
-            <span className="category-hint">Elige la temática</span>
+            <span className="category-hint">
+              {isUfpsActive && isGeneralActive
+                ? 'Ambas barajas activas'
+                : isUfpsActive
+                ? 'Solo baraja UFPS'
+                : 'Solo baraja General'}
+            </span>
           </div>
 
           <div className="categories-grid">
             {/* Opción UFPS */}
             <div
-              className={`category-card ${mainCategory === 'ufps' ? 'active' : ''}`}
-              onClick={() => setMainCategory('ufps')}
+              className={`category-card ${isUfpsActive ? 'active' : ''}`}
+              onClick={() => toggleCategory('ufps')}
             >
               <div className="cat-top">
-                <span className="badge-pill badge-neutral">ESPECIAL</span>
-                {mainCategory === 'ufps' && (
+                <span className={`badge-pill ${isUfpsActive ? 'badge-red' : 'badge-neutral'}`}>
+                  {isUfpsActive ? 'ACTIVO' : 'ESPECIAL'}
+                </span>
+                {isUfpsActive && (
                   <span className="check-badge"><Check size={14} color="#C24128" /></span>
                 )}
               </div>
@@ -293,14 +306,14 @@ export default function ConfigScreen() {
 
             {/* Opción General */}
             <div
-              className={`category-card ${mainCategory === 'general' ? 'active' : ''}`}
-              onClick={() => setMainCategory('general')}
+              className={`category-card ${isGeneralActive ? 'active' : ''}`}
+              onClick={() => toggleCategory('general')}
             >
               <div className="cat-top">
-                <span className={`badge-pill ${mainCategory === 'general' ? 'badge-red' : 'badge-neutral'}`}>
-                  ACTIVO
+                <span className={`badge-pill ${isGeneralActive ? 'badge-red' : 'badge-neutral'}`}>
+                  {isGeneralActive ? 'ACTIVO' : 'DISPONIBLE'}
                 </span>
-                {mainCategory === 'general' && (
+                {isGeneralActive && (
                   <span className="check-badge"><Check size={14} color="#C24128" /></span>
                 )}
               </div>
@@ -314,7 +327,7 @@ export default function ConfigScreen() {
           </div>
 
           {/* Subtemas activos (visible cuando General está seleccionado) */}
-          {mainCategory === 'general' && (
+          {isGeneralActive && (
             <div className="subtopics-section">
               <div className="subtopics-header">
                 <div className="subtopics-title-wrap">
@@ -343,7 +356,9 @@ export default function ConfigScreen() {
               </div>
 
               <p className="subtopics-hint">
-                Toca cualquier tema para añadirlo a la baraja secreta.
+                {isUfpsActive
+                  ? 'Palabras de General y UFPS se combinarán al azar durante la partida.'
+                  : 'Toca cualquier tema para añadirlo o quitarlo de la baraja secreta.'}
               </p>
             </div>
           )}

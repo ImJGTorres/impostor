@@ -21,7 +21,8 @@ export default function HandoverScreen() {
     secretInfo,
     nextPlayerTurn,
     setCurrentScreen,
-    withClues
+    withClues,
+    isAllImpostorsRound
   } = useGame();
 
   const isPreviewReveal = typeof window !== 'undefined' && (
@@ -168,13 +169,13 @@ export default function HandoverScreen() {
                     <span>{getThemeText(secretInfo?.categoryName)}</span>
                   </div>
 
-                  {withClues ? (
+                  {withClues && !isAllImpostorsRound && currentPlayer.hint ? (
                     <div className="impostor-camouflage-box">
                       <div className="camo-header">
                         <span className="camo-q">?</span>
                         <span className="camo-title">PISTA DE CAMUFLAJE</span>
                       </div>
-                      <h2 className="camo-hint-text">{currentPlayer.hint || secretInfo.hint}</h2>
+                      <h2 className="camo-hint-text">{currentPlayer.hint}</h2>
                     </div>
                   ) : (
                     <div className="impostor-blind-box">

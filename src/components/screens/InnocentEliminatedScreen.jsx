@@ -8,13 +8,23 @@ export default function InnocentEliminatedScreen() {
     lastEliminated,
     assignedPlayers,
     startNextRoundOfClues,
-    returnToHome
+    returnToHome,
+    isAllImpostorsRound,
+    impostorCount
   } = useGame();
 
   if (!lastEliminated) return null;
 
-  const remainingCivilians = assignedPlayers.filter(p => !p.isImpostor && p.isAlive).length;
-  const remainingImpostors = assignedPlayers.filter(p => p.isImpostor && p.isAlive).length;
+  const eliminatedCount = assignedPlayers.filter(p => !p.isAlive).length;
+
+  const remainingCivilians = isAllImpostorsRound
+    ? assignedPlayers.length - impostorCount
+    : assignedPlayers.filter(p => !p.isImpostor && p.isAlive).length;
+
+  const remainingImpostors = isAllImpostorsRound
+    ? Math.max(0, impostorCount - eliminatedCount)
+    : assignedPlayers.filter(p => p.isImpostor && p.isAlive).length;
+
   const isHighDanger = remainingCivilians - remainingImpostors <= 1;
 
   const wasImpostor = Boolean(lastEliminated.wasImpostor);
@@ -78,7 +88,9 @@ export default function InnocentEliminatedScreen() {
 
             <p className="eliminated-note">
               {wasImpostor
-                ? `¡Buen trabajo! Aún quedan ${remainingImpostors} impostores ocultos en la mesa.`
+                ? (remainingImpostors === 1
+                  ? '¡Buen trabajo! Aún queda 1 impostor oculto en la mesa.'
+                  : `¡Buen trabajo! Aún quedan ${remainingImpostors} impostores ocultos en la mesa.`)
                 : 'Queda descalificada de emitir votos y formular pistas en la siguiente ronda.'}
             </p>
           </div>

@@ -11,7 +11,8 @@ export default function ImpostorWinsScreen() {
     currentRound,
     startNewGame,
     returnToHome,
-    withClues
+    withClues,
+    isAllImpostorsRound
   } = useGame();
 
   const playersList = assignedPlayers || [];
@@ -32,71 +33,122 @@ export default function ImpostorWinsScreen() {
     <div className="screen-container">
       <Header
         title="EL IMPOSTOR"
-        subtitle="Round Result"
+        subtitle={isAllImpostorsRound ? "¡Giro Inesperado!" : "Round Result"}
         showBack={true}
         onBack={returnToHome}
       />
 
       <main className="impostor-win-content">
-        <div className="impostor-win-header">
-          <h1 className="impostor-win-title">
-            ¡{aliveImpostors.length === 1 ? 'EL IMPOSTOR' : 'LOS IMPOSTORES'}<br />
-            <span className="ha-ganado-text">
-              {aliveImpostors.length === 1 ? 'HA GANADO!' : 'HAN GANADO!'}
-            </span>
-          </h1>
-          <p className="impostor-win-desc">
-            Los impostores igualaron en número a los civiles ({aliveImpostors.length} Impostores = {aliveCivilians} Civiles). El engaño fue total y se apoderaron del control definitivo de la sala.
-          </p>
-        </div>
-
-        {/* 1. QUIÉN GANÓ: Impostores que quedaron vivos */}
-        <div className="neo-card winner-spotlight-card">
-          <div className="winner-card-top">
-            <div className="winner-pill-tag">
-              <Trophy size={14} color="#FBBF24" />
-              <span>{aliveImpostors.length === 1 ? 'GANADOR DE LA PARTIDA' : 'GANADORES DE LA PARTIDA'}</span>
+        {isAllImpostorsRound ? (
+          <div className="impostor-win-header">
+            <div className="badge-pill badge-red" style={{ margin: '0 auto 8px auto', width: 'fit-content' }}>
+              <span>😱 RONDA SECRETA DE PARANOIA</span>
             </div>
-            <span className="badge-pill badge-green-glow">SOBREVIVIÓ</span>
+            <h1 className="impostor-win-title" style={{ color: '#E11D48' }}>
+              ¡TODOS ERAN<br />
+              <span className="ha-ganado-text">IMPOSTORES!</span>
+            </h1>
+            <p className="impostor-win-desc">
+              ¡Nadie conocía la palabra secreta ni tenía pistas! Todos estuvieron fingiendo, mintiendo y sospechando entre sí durante toda la ronda.
+            </p>
           </div>
+        ) : (
+          <div className="impostor-win-header">
+            <h1 className="impostor-win-title">
+              ¡{aliveImpostors.length === 1 ? 'EL IMPOSTOR' : 'LOS IMPOSTORES'}<br />
+              <span className="ha-ganado-text">
+                {aliveImpostors.length === 1 ? 'HA GANADO!' : 'HAN GANADO!'}
+              </span>
+            </h1>
+            <p className="impostor-win-desc">
+              Los impostores igualaron en número a los civiles ({aliveImpostors.length} Impostores = {aliveCivilians} Civiles). El engaño fue total y se apoderaron del control definitivo de la sala.
+            </p>
+          </div>
+        )}
 
-          <div className="winner-profile-row">
-            <div className="winner-avatar-group">
-              {aliveImpostors.map(p => (
+        {/* 1. QUIÉN GANÓ / SPOTLIGHT */}
+        {isAllImpostorsRound ? (
+          <div className="neo-card paranoia-spotlight-card">
+            <div className="winner-card-top">
+              <div className="winner-pill-tag paranoia-pill">
+                <span>🎭</span>
+                <span>ENGAÑO COLECTIVO TOTAL</span>
+              </div>
+              <span className="badge-pill badge-red">CAOS MÁXIMO</span>
+            </div>
+
+            <div className="paranoia-avatars-wrap">
+              {allImpostors.map(p => (
                 <div
                   key={p.id}
-                  className="winner-avatar-disc"
+                  className="winner-avatar-disc paranoia-avatar-disc"
                   style={{ backgroundColor: p.color || '#C24128' }}
+                  title={p.name}
                 >
                   <span>{p.letter}</span>
-                  <span className="crown-badge">👑</span>
+                  <span className="crown-badge">🤡</span>
                 </div>
               ))}
             </div>
 
-            <div className="winner-text-col">
-              <span className="winner-sub-label">
-                {aliveImpostors.length === 1 ? 'Infiltrado que quedó vivo:' : 'Infiltrados que quedaron vivos:'}
-              </span>
-              <h2 className="winner-main-names">{winnerNames}</h2>
+            <div className="paranoia-text-box">
+              <span className="winner-sub-label">Todos jugaron a ciegas:</span>
+              <h2 className="winner-main-names">¡Nadie sabía nada!</h2>
               <span className="winner-triumph-caption">
-                {aliveImpostors.length === 1
-                  ? 'Engañó a toda la mesa, esquivó las sospechas y se llevó la victoria.'
-                  : 'Lograron mantenerse con vida y sellar el triunfo del equipo infiltrado.'}
+                Cada jugador pensó que era el único impostor sufriendo sin pistas, inventando palabras para no levantar sospechas.
               </span>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="neo-card winner-spotlight-card">
+            <div className="winner-card-top">
+              <div className="winner-pill-tag">
+                <Trophy size={14} color="#FBBF24" />
+                <span>{aliveImpostors.length === 1 ? 'GANADOR DE LA PARTIDA' : 'GANADORES DE LA PARTIDA'}</span>
+              </div>
+              <span className="badge-pill badge-green-glow">SOBREVIVIÓ</span>
+            </div>
+
+            <div className="winner-profile-row">
+              <div className="winner-avatar-group">
+                {aliveImpostors.map(p => (
+                  <div
+                    key={p.id}
+                    className="winner-avatar-disc"
+                    style={{ backgroundColor: p.color || '#C24128' }}
+                  >
+                    <span>{p.letter}</span>
+                    <span className="crown-badge">👑</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="winner-text-col">
+                <span className="winner-sub-label">
+                  {aliveImpostors.length === 1 ? 'Infiltrado que quedó vivo:' : 'Infiltrados que quedaron vivos:'}
+                </span>
+                <h2 className="winner-main-names">{winnerNames}</h2>
+                <span className="winner-triumph-caption">
+                  {aliveImpostors.length === 1
+                    ? 'Engañó a toda la mesa, esquivó las sospechas y se llevó la victoria.'
+                    : 'Lograron mantenerse con vida y sellar el triunfo del equipo infiltrado.'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 2. QUIÉNES ERAN LOS IMPOSTORES: Lista de todos los infiltrados */}
         <div className="neo-card all-impostors-card">
           <div className="card-top-row">
             <div className="section-title-group">
               <span className="section-emoji">🎭</span>
-              <h3 className="section-title">¿Quiénes eran los impostores?</h3>
+              <h3 className="section-title">
+                {isAllImpostorsRound ? "¿Quiénes eran los impostores? ¡TODOS!" : "¿Quiénes eran los impostores?"}
+              </h3>
             </div>
             <span className="badge-pill badge-red">
-              {allImpostors.length} {allImpostors.length === 1 ? 'infiltrado' : 'infiltrados'} en total
+              {isAllImpostorsRound ? "100% de la mesa" : `${allImpostors.length} ${allImpostors.length === 1 ? 'infiltrado' : 'infiltrados'} en total`}
             </span>
           </div>
 
@@ -119,16 +171,29 @@ export default function ImpostorWinsScreen() {
                   <div className="roster-info">
                     <div className="roster-title-row">
                       <span className="roster-name">{imp.name}</span>
-                      {isAlive ? (
-                        <span className="roster-badge badge-alive">
-                          <Trophy size={11} />
-                          <span>¡GANÓ! (VIVO)</span>
-                        </span>
+                      {isAllImpostorsRound ? (
+                        isAlive ? (
+                          <span className="roster-badge badge-alive" style={{ background: '#FEF2F2', color: '#DC2626', borderColor: '#FECACA' }}>
+                            <span>🤡 Fingió hasta el final</span>
+                          </span>
+                        ) : (
+                          <span className="roster-badge badge-dead">
+                            <UserX size={11} />
+                            <span>Fue acusado (¡era impostor!)</span>
+                          </span>
+                        )
                       ) : (
-                        <span className="roster-badge badge-dead">
-                          <UserX size={11} />
-                          <span>{elimEntry ? `Eliminado en R${elimEntry.round}` : 'Eliminado'}</span>
-                        </span>
+                        isAlive ? (
+                          <span className="roster-badge badge-alive">
+                            <Trophy size={11} />
+                            <span>¡GANÓ! (VIVO)</span>
+                          </span>
+                        ) : (
+                          <span className="roster-badge badge-dead">
+                            <UserX size={11} />
+                            <span>{elimEntry ? `Eliminado en R${elimEntry.round}` : 'Eliminado'}</span>
+                          </span>
+                        )
                       )}
                     </div>
                   </div>
@@ -141,7 +206,9 @@ export default function ImpostorWinsScreen() {
         {/* Card: Palabra Oculta Jamás Revelada */}
         <div className="neo-card secret-unrevealed-card">
           <div className="secret-unrevealed-header">
-            <span className="unrevealed-label">PALABRA OCULTA JAMÁS REVELADA</span>
+            <span className="unrevealed-label">
+              {isAllImpostorsRound ? "LA PALABRA QUE NADIE CONOCÍA" : "PALABRA OCULTA JAMÁS REVELADA"}
+            </span>
             <span className="unrevealed-category">{getThemeText(secretInfo?.categoryName)}</span>
           </div>
           <div className="unrevealed-word-row">
@@ -171,6 +238,9 @@ export default function ImpostorWinsScreen() {
           flex-direction: column;
           gap: 16px;
           flex: 1;
+          box-sizing: border-box;
+          max-width: 100%;
+          overflow-x: hidden;
         }
 
         .impostor-win-header {
@@ -180,7 +250,7 @@ export default function ImpostorWinsScreen() {
         }
 
         .impostor-win-title {
-          font-size: 2.3rem;
+          font-size: clamp(1.8rem, 6.5vw, 2.3rem);
           font-weight: 900;
           color: var(--text-main);
           letter-spacing: -0.02em;
@@ -200,20 +270,64 @@ export default function ImpostorWinsScreen() {
         }
 
         /* 1. WINNER SPOTLIGHT CARD */
-        .winner-spotlight-card {
-          padding: 16px 18px;
+        .winner-spotlight-card,
+        .paranoia-spotlight-card {
+          padding: 16px;
           background: linear-gradient(135deg, #FFFDF8 0%, #FEF3C7 100%);
           border: 2.5px solid #1C1917;
           box-shadow: 4px 4px 0px #1C1917;
           display: flex;
           flex-direction: column;
           gap: 12px;
+          box-sizing: border-box;
+          max-width: 100%;
+          overflow: hidden;
+        }
+
+        .paranoia-spotlight-card {
+          background: linear-gradient(135deg, #FFFDF8 0%, #FFF1F2 100%);
+          border-color: #E11D48;
         }
 
         .winner-card-top {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .paranoia-pill {
+          background-color: #FFF1F2 !important;
+          color: #E11D48 !important;
+          border: 1.5px solid #FECDD3 !important;
+        }
+
+        .paranoia-avatars-wrap {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          align-items: center;
+          gap: 10px;
+          padding: 6px 2px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .paranoia-avatar-disc {
+          width: 44px;
+          height: 44px;
+          font-size: 1.15rem;
+          flex-shrink: 0;
+        }
+
+        .paranoia-text-box {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          text-align: center;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         .winner-pill-tag {
@@ -242,13 +356,14 @@ export default function ImpostorWinsScreen() {
           display: flex;
           align-items: center;
           gap: 14px;
+          flex-wrap: wrap;
         }
 
         .winner-avatar-group {
           display: flex;
           align-items: center;
-          gap: -6px;
-          flex-shrink: 0;
+          flex-wrap: wrap;
+          gap: 6px;
         }
 
         .winner-avatar-disc {

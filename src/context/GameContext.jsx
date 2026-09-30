@@ -78,6 +78,10 @@ export function GameProvider({ children }) {
   const starterCountsRef = useRef({});
   const recentStarterRef = useRef(null);
   const recentWordsRef = useRef([]);
+  const wasAllImpostorsRef = useRef(false);
+
+  // Ronda especial: Todos son impostores y nadie tiene pista (Easter egg / Paranoia)
+  const [isAllImpostorsRound, setIsAllImpostorsRound] = useState(false);
 
   // Alternar categoría garantizando mínimo 1 seleccionada (permite ambas)
   const toggleCategory = (catId) => {
@@ -150,6 +154,13 @@ export function GameProvider({ children }) {
       setIsLoadingWords(false);
     }
     initWords();
+
+    if (typeof window !== 'undefined') {
+      window.triggerParanoiaRound = () => {
+        window.__FORCE_ALL_IMPOSTORS = true;
+        console.log("😈 ¡La próxima ronda será Ronda Paranoia (Todos Impostores a ciegas)!");
+      };
+    }
   }, []);
 
   // Sincronizar con Google Sheets
@@ -280,56 +291,83 @@ export function GameProvider({ children }) {
       [availableHints[i], availableHints[j]] = [availableHints[j], availableHints[i]];
     }
 
-    // 3. Selección equitativa y aleatoria de impostores (cero repeticiones consecutivas indebidas)
-    const counts = impostorCountsRef.current;
-    playerNames.forEach(name => {
-      if (counts[name] === undefined) counts[name] = 0;
-    });
-
-    let eligible = playerNames.filter(name => !recentImpostorsRef.current.includes(name));
-    if (eligible.length < impostorCount) {
-      eligible = [...playerNames];
+    // 3. Selección de roles
+    // Probabilidad baja (~5% aleatorio en cualquier ronda) de ronda especial "Todos Impostores a ciegas"
+    const isForced = typeof window !== 'undefined' && window.__FORCE_ALL_IMPOSTORS === true;
+    const triggerAllImpostors = isForced || (!wasAllImpostorsRef.current && Math.random() < 0.05);
+    if (isForced && typeof window !== 'undefined') {
+      window.__FORCE_ALL_IMPOSTORS = false;
     }
+    wasAllImpostorsRef.current = triggerAllImpostors;
+    setIsAllImpostorsRound(triggerAllImpostors);
 
-    // Barajado Fisher-Yates sobre elegibles para romper empates de forma 100% aleatoria
-    const shuffledEligible = [...eligible];
-    for (let i = shuffledEligible.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffledEligible[i], shuffledEligible[j]] = [shuffledEligible[j], shuffledEligible[i]];
-    }
-
-    // Ordenar por menor cantidad de veces siendo impostor en la sesión
-    shuffledEligible.sort((a, b) => (counts[a] || 0) - (counts[b] || 0));
-    const chosenImpostorNames = shuffledEligible.slice(0, impostorCount);
-
-    // Actualizar historial
-    chosenImpostorNames.forEach(name => {
-      counts[name] = (counts[name] || 0) + 1;
-    });
-    recentImpostorsRef.current = [...chosenImpostorNames];
-    setPreviousImpostorNames(chosenImpostorNames);
-
-    const impostorNameSet = new Set(chosenImpostorNames);
-
-    // Asignar roles a jugadores
-    let impostorCounter = 0;
-    const playersWithRoles = playerNames.map((name, idx) => {
-      const isImp = impostorNameSet.has(name);
-      let assignedHint = null;
-      if (isImp) {
-        assignedHint = availableHints[impostorCounter % availableHints.length];
-        impostorCounter++;
-      }
-      return {
+    let playersWithRoles;
+    if (triggerAllImpostors) {
+      // ¡TODOS SON IMPOSTORES Y NADIE TIENE PISTA!
+      playersWithRoles = playerNames.map((name, idx) => ({
         id: idx + 1,
         name,
         letter: name.charAt(0).toUpperCase(),
         color: AVATAR_COLORS[idx % AVATAR_COLORS.length],
-        isImpostor: isImp,
-        hint: assignedHint,
+        isImpostor: true,
+        hint: null, // Nadie tiene pista para hacerlo súper gracioso
         isAlive: true
-      };
-    });
+      }));
+
+      recentImpostorsRef.current = [];
+      setPreviousImpostorNames([...playerNames]);
+    } else {
+      // Selección equitativa y aleatoria de impostores (cero repeticiones consecutivas indebidas)
+      const counts = impostorCountsRef.current;
+      playerNames.forEach(name => {
+        if (counts[name] === undefined) counts[name] = 0;
+      });
+
+      let eligible = playerNames.filter(name => !recentImpostorsRef.current.includes(name));
+      if (eligible.length < impostorCount) {
+        eligible = [...playerNames];
+      }
+
+      // Barajado Fisher-Yates sobre elegibles para romper empates de forma 100% aleatoria
+      const shuffledEligible = [...eligible];
+      for (let i = shuffledEligible.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledEligible[i], shuffledEligible[j]] = [shuffledEligible[j], shuffledEligible[i]];
+      }
+
+      // Ordenar por menor cantidad de veces siendo impostor en la sesión
+      shuffledEligible.sort((a, b) => (counts[a] || 0) - (counts[b] || 0));
+      const chosenImpostorNames = shuffledEligible.slice(0, impostorCount);
+
+      // Actualizar historial
+      chosenImpostorNames.forEach(name => {
+        counts[name] = (counts[name] || 0) + 1;
+      });
+      recentImpostorsRef.current = [...chosenImpostorNames];
+      setPreviousImpostorNames(chosenImpostorNames);
+
+      const impostorNameSet = new Set(chosenImpostorNames);
+
+      // Asignar roles a jugadores
+      let impostorCounter = 0;
+      playersWithRoles = playerNames.map((name, idx) => {
+        const isImp = impostorNameSet.has(name);
+        let assignedHint = null;
+        if (isImp) {
+          assignedHint = availableHints[impostorCounter % availableHints.length];
+          impostorCounter++;
+        }
+        return {
+          id: idx + 1,
+          name,
+          letter: name.charAt(0).toUpperCase(),
+          color: AVATAR_COLORS[idx % AVATAR_COLORS.length],
+          isImpostor: isImp,
+          hint: assignedHint,
+          isAlive: true
+        };
+      });
+    }
 
     setAssignedPlayers(playersWithRoles);
     setCurrentTurnIndex(0);
@@ -396,6 +434,34 @@ export function GameProvider({ children }) {
     setRoundHistory(prev => [...prev, historyEntry]);
     setLastEliminated({ ...voted, wasImpostor });
 
+    // Número de jugadores eliminados hasta el momento en la partida
+    const eliminatedCount = updatedPlayers.filter(p => !p.isAlive).length;
+
+    // Caso especial: Ronda secreta de Paranoia (Todos eran impostores)
+    // Se revela cuando se elimine a la cantidad de impostores configurada (impostorCount)
+    if (isAllImpostorsRound) {
+      if (eliminatedCount >= impostorCount) {
+        // Se sacó a los impostores configurados: ¡Momento del clímax y gran revelación!
+        confetti({
+          particleCount: 120,
+          spread: 100,
+          origin: { y: 0.6 }
+        });
+        setCurrentScreen('IMPOSTOR_WINS');
+        return;
+      } else {
+        // Aún faltan impostores por sacar según lo configurado en la ronda:
+        // Pasa a la pantalla normal de expulsión (INNOCENT_ELIMINATED)
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.6 }
+        });
+        setCurrentScreen('INNOCENT_ELIMINATED');
+        return;
+      }
+    }
+
     // Calcular vivos
     const remainingCivilians = updatedPlayers.filter(p => !p.isImpostor && p.isAlive).length;
     const remainingImpostors = updatedPlayers.filter(p => p.isImpostor && p.isAlive).length;
@@ -452,6 +518,7 @@ export function GameProvider({ children }) {
   const returnToHome = () => {
     setActiveTab('lobby');
     setCurrentScreen('HOME');
+    setIsAllImpostorsRound(false);
   };
 
   const currentPlayer = assignedPlayers[currentTurnIndex] || null;
@@ -494,6 +561,7 @@ export function GameProvider({ children }) {
         firstCluePlayer,
         startNextRoundOfClues,
         returnToHome,
+        isAllImpostorsRound,
         // Nuevas propiedades de gestión Excel / Sheets
         dynamicWordsData,
         currentUfpsWords,
